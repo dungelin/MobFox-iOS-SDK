@@ -5,10 +5,13 @@
 #import "NSString+MobFox.h"
 #import "DTXMLDocument.h"
 #import "DTXMLElement.h"
+#import "VASTXMLParser.h"
 
 #import "NSURL+MobFox.h"
 #import "MobFoxAdBrowserViewController.h"
 #import "MobFoxToolBar.h"
+
+#import "MobFoxBannerView.h"
 
 #import "UIImage+MobFox.h"
 #import "UIButton+MobFox.h"
@@ -21,10 +24,13 @@
 #include "MobFoxInterstitialPlayerViewController.h"
 
 #import <AdSupport/AdSupport.h>
+#import "AdMobCustomEventFullscreen.h"
+#import "iAdCustomEventFullscreen.h"
+#import "CustomEvent.h"
 
 NSString * const MobFoxVideoInterstitialErrorDomain = @"MobFoxVideoInterstitial";
 
-@interface MobFoxVideoInterstitialViewController ()<UIGestureRecognizerDelegate, UIActionSheetDelegate> {
+@interface MobFoxVideoInterstitialViewController ()<UIGestureRecognizerDelegate, UIActionSheetDelegate, CustomEventFullscreenDelegate, MobFoxBannerViewDelegate> {
     BOOL videoSkipButtonShow;
     NSTimeInterval videoSkipButtonDisplayDelay;
     BOOL videoTimerShow;
@@ -43,7 +49,11 @@ NSString * const MobFoxVideoInterstitialErrorDomain = @"MobFoxVideoInterstitial"
     NSTimeInterval interstitialAutoCloseDelay;
     BOOL interstitialTimerShow;
     BOOL readyToPlaySecondaryInterstitial;
-
+    BOOL alreadyRequestedInterstitial;
+    BOOL alreadyRequestedVideo;
+    
+    UIInterfaceOrientation requestedAdOrientation;
+    
     BOOL currentlyPlayingInterstitial;
     float statusBarHeight;
     BOOL statusBarWasVisible;
@@ -61,6 +71,11 @@ NSString * const MobFoxVideoInterstitialErrorDomain = @"MobFoxVideoInterstitial"
     UIViewController *videoViewController;
     UIViewController *interstitialViewController;
 
+    NSMutableArray *customEvents;
+
+    NSInteger HTMLOverlayWidth;
+    NSInteger HTMLOverlayHeight;
+
     UIView *tempView;
 }
 
@@ -68,6 +83,7 @@ NSString * const MobFoxVideoInterstitialErrorDomain = @"MobFoxVideoInterstitial"
 @property (nonatomic, strong) MPMoviePlayerController *videoPlayer;
 @property (nonatomic, strong) NSMutableArray *videoTopToolbarButtons;
 @property (nonatomic, strong) MobFoxToolBar *videoTopToolbar;
+@property (nonatomic, strong) NSMutableArray *vastAds;
 @property (nonatomic, strong) MobFoxToolBar *videoBottomToolbar;
 @property (nonatomic, strong) UIImage *videoPauseButtonImage;
 @property (nonatomic, strong) UIImage *videoPlayButtonImage;
@@ -82,6 +98,8 @@ NSString * const MobFoxVideoInterstitialErrorDomain = @"MobFoxVideoInterstitial"
 
 @property (nonatomic, strong) MobFoxInterstitialPlayerViewController *mobFoxInterstitialPlayerViewController;
 
+@property (nonatomic, retain) CustomEventFullscreen *customEventFullscreen;
+
 @property (nonatomic, strong) MobFoxToolBar *interstitialTopToolbar;
 @property (nonatomic, strong) MobFoxToolBar *interstitialBottomToolbar;
 @property (nonatomic, strong) NSMutableArray *interstitialTopToolbarButtons;
@@ -94,12 +112,13 @@ NSString * const MobFoxVideoInterstitialErrorDomain = @"MobFoxVideoInterstitial"
 @property (nonatomic, strong) UIButton *browserBackButton;
 @property (nonatomic, strong) UIButton *browserForwardButton;
 @property (nonatomic, strong) NSString *interstitialURL;
+@property (nonatomic, strong) NSString *videoClickThrough;
+@property (nonatomic, strong) NSString *overlayClickThrough;
+
 @property (nonatomic, strong) UIButton *interstitialSkipButton;
 
-@property (nonatomic, strong) NSMutableArray *advertTrackingEvents;
-@property (nonatomic, strong) NSString *advertAnimation;
+@property (nonatomic, strong) NSMutableArray *videoAdvertTrackingEvents;
 
-@property (nonatomic, strong) NSString *demoAdTypeToShow;
 @property (nonatomic, strong) NSString *IPAddress;
 
 @property (nonatomic, assign) CGFloat currentLatitude;
@@ -113,8 +132,6 @@ NSString * const MobFoxVideoInterstitialErrorDomain = @"MobFoxVideoInterstitial"
 @property (nonatomic, strong) NSMutableDictionary *browserUserAgentDict;
 
 - (BOOL)videoCreateAdvert:(DTXMLElement*)videoElement;
-- (BOOL)videoCreateTopToolbar:(DTXMLElement*)xml;
-- (BOOL)videoCreateBottomToolbar:(DTXMLElement*)xml;
 - (void)videoReplayButtonAction:(id)sender;
 - (void)videoStartTimer;
 - (void)videoStopTimer;
@@ -125,36 +142,24 @@ NSString * const MobFoxVideoInterstitialErrorDomain = @"MobFoxVideoInterstitial"
 - (void)videoStalledStopTimer;
 - (void)videoFailedToLoad;
 - (void)checkVideoLoadedAndReadyToPlay;
-- (void)checkVideoToInterstitialVideoLoadedAndReadyToPlay:(NSDictionary*)dictionary;
-- (void)videoTidyUpAfterAnimationOut;
-- (void)videoTidyUpAfterInterstitialToVideoAnimationOut;
+- (void)videoTidyUpAfterAd;
 
-- (BOOL)interstitialCreateAdvert:(DTXMLElement*)interstitialElement;
-- (BOOL)interstitialCreateTopToolbar:(DTXMLElement*)xml;
-- (BOOL)interstitialCreateBottomToolbarBottomToolbar:(DTXMLElement*)xml;
-- (void)interstitialLoadWebPage;
 - (void)interstitialStartTimer;
 - (void)interstitialStopTimer;
 - (void)interstitialSkipAction:(id)sender;
-- (void)interstitialPlayAdvert;
 
 - (void)advertAddNotificationObservers:(MobFoxAdGroupType)adGroup;
 - (void)advertRemoveNotificationObservers:(MobFoxAdGroupType)adGroup;
 - (void)advertCreationFailed;
 - (void)advertCreatedSuccessfully:(MobFoxAdType)advertType;
 - (void)advertActionTrackingEvent:(NSString*)eventType;
-- (void)advertAnimateIn:(NSString*)animationType advertTypeLoaded:(MobFoxAdType)advertType viewToAnimate:(UIView*)viewToAnimate;
-- (void)advertAnimateOut:(NSString*)animationType advertTypeLoaded:(MobFoxAdType)advertType viewToAnimate:(UIView*)viewToAnimate;
-- (void)advertTidyUpAfterAnimationOut:(MobFoxAdType)advertType;
-- (void)videoToInterstitialAnimateSecondaryIn:(NSString*)animationType advertTypeLoaded:(MobFoxAdType)advertType viewToAnimate:(UIView*)viewToAnimate;
-- (void)interstitialToVideoAnimateSecondaryOut:(NSString*)animationType viewToAnimate:(UIView*)viewToAnimate;
+- (void)advertShow:(MobFoxAdType)advertType viewToShow:(UIView*)viewToShow;
+- (void)advertTidyUpAfterAd:(MobFoxAdType)advertType;
 
 - (void)setup;
 - (void)showStatusBarIfNecessary;
 - (void)hideStatusBar;
 
-- (void)applyFrameSize:(UIInterfaceOrientation)interfaceOrientation;
-- (void)applyToolbarFrame:(MobFoxToolBar*)theToolBar bottomToolbar:(BOOL)bottomToolbar orientation:(UIInterfaceOrientation)interfaceOrientation;
 - (void)updateAllFrames:(UIInterfaceOrientation)interfaceOrientation;
 - (CGRect)returnVideoHTMLOverlayFrame;
 - (CGRect)returnInterstitialWebFrame;
@@ -162,11 +167,12 @@ NSString * const MobFoxVideoInterstitialErrorDomain = @"MobFoxVideoInterstitial"
 
 @end
 
+
 @implementation MobFoxVideoInterstitialViewController
 
-@synthesize delegate, locationAwareAdverts, currentLatitude, currentLongitude, advertLoaded, advertViewActionInProgress, requestURL;
+@synthesize delegate, locationAwareAdverts, enableInterstitialAds, prioritizeVideoAds, enableVideoAds, currentLatitude, currentLongitude, advertLoaded, advertViewActionInProgress, requestURL;
 
-@synthesize demoAdTypeToShow, advertAnimation,advertTrackingEvents, IPAddress;
+@synthesize videoAdvertTrackingEvents, IPAddress;
 @synthesize mobFoxVideoPlayerViewController, videoPlayer, videoTopToolbar, videoBottomToolbar, videoTopToolbarButtons, videoSkipButton, videoStalledTimer; 
 @synthesize videoPauseButtonDisabledImage, videoPlayButtonDisabledImage,videoPauseButtonImage, videoPlayButtonImage, videoTimer, videoTimerLabel, interstitialTimer;
 @synthesize videoHTMLOverlayHTML, videoHTMLOverlayWebView;
@@ -174,8 +180,9 @@ NSString * const MobFoxVideoInterstitialErrorDomain = @"MobFoxVideoInterstitial"
 @synthesize interstitialTopToolbar, interstitialBottomToolbar, interstitialTopToolbarButtons, interstitialSkipButton;
 @synthesize interstitialURL, interstitialHoldingView, interstitialWebView, interstitialMarkup, browserBackButton, browserForwardButton;
 @synthesize userAgent;
+@synthesize vastAds, video_max_duration, video_min_duration;
+@synthesize userAge, userGender, keywords;
 
-static float animationDuration = 0.50;
 
 #pragma mark - Init/Dealloc Methods
 
@@ -200,12 +207,13 @@ static float animationDuration = 0.50;
 {
     UIWebView* webView = [[UIWebView alloc] initWithFrame:CGRectZero];
     self.userAgent = [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
+    enableInterstitialAds = YES;
 
     [self setUpBrowserUserAgentStrings];
 
     if (UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone)
     {
-        buttonSize = 30.0f;
+        buttonSize = 40.0f;
     }
     else
     {
@@ -219,7 +227,7 @@ static float animationDuration = 0.50;
         statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.width;
     }
 
-    CGRect mainFrame = [UIScreen mainScreen].applicationFrame;
+    CGRect mainFrame = [UIScreen mainScreen].bounds;
     self.view = [[UIView alloc] initWithFrame:mainFrame];
     self.view.backgroundColor = [UIColor clearColor];
 
@@ -227,6 +235,7 @@ static float animationDuration = 0.50;
 
     self.wantsFullScreenLayout = YES;
     self.view.autoresizesSubviews = YES;
+    customEvents = [[NSMutableArray alloc]init];
 
     self.view.alpha = 0.0f;
     self.view.hidden = YES;
@@ -251,7 +260,6 @@ static float animationDuration = 0.50;
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-
     return YES;
 }
 
@@ -448,8 +456,8 @@ static float animationDuration = 0.50;
 	if (theRangeBeginning.location == NSNotFound) {
 		return nil;
 	}
-	int location = theRangeBeginning.location + theRangeBeginning.length;
-	int length = [localContents length] - location;
+	long location = theRangeBeginning.location + theRangeBeginning.length;
+	long length = [localContents length] - location;
 	NSRange theRangeToSearch = {location, length};
 	NSRange theRangeEnding = [localContents rangeOfString:endingString options:NSCaseInsensitiveSearch range:theRangeToSearch];
 	if (theRangeEnding.location == NSNotFound) {
@@ -466,28 +474,28 @@ static float animationDuration = 0.50;
 
 - (MobFoxAdType)adTypeEnumValue:(NSString*)adType {
 
-    if ([adType isEqualToString:@"video-to-interstitial"]) {
-        return MobFoxAdTypeVideoToInterstitial;
-    }
-
-    if ([adType isEqualToString:@"video"]) {
+    if ([adType isEqualToString:@"vastAd"]) {
         return MobFoxAdTypeVideo;
     }
 
-    if ([adType isEqualToString:@"interstitial"]) {
-        return MobFoxAdTypeInterstitial;
-    }
-
-    if ([adType isEqualToString:@"interstitial-to-video"]) {
-        return MobFoxAdTypeInterstitialToVideo;
-    }
-
     if ([adType isEqualToString:@"noAd"]) {
-        return MobFoxAdTypeInterstitialToVideo;
+        return MobFoxAdTypeNoAdInventory;
     }
 
     if ([adType isEqualToString:@"error"]) {
-        return MobFoxAdTypeInterstitialToVideo;
+        return MobFoxAdTypeError;
+    }
+    
+    if ([adType isEqualToString:@"textAd"]) {
+        return MobFoxAdTypeText;
+    }
+    
+    if ([adType isEqualToString:@"imageAd"]) {
+        return MobFoxAdTypeImage;
+    }
+    
+    if ([adType isEqualToString:@"mraidAd"]) {
+        return MobFoxAdTypeMraid;
     }
 
     return MobFoxAdTypeUnknown;
@@ -500,32 +508,6 @@ static float animationDuration = 0.50;
 
 #pragma mark Properties
 
-#pragma mark - Demo Ad Requests
-
-- (void)requestDemoVideoAdvert {
-    self.demoAdTypeToShow = @"Video";
-
-    [self requestAd];
-}
-
-- (void)requestDemoInterstitualAdvert {
-    self.demoAdTypeToShow = @"Interstitial";
-
-    [self requestAd];
-}
-
-- (void)requestDemoVideoToInterstitualAdvert {
-    self.demoAdTypeToShow = @"VideoToInterstitial";
-
-    [self requestAd];
-}
-
-- (void)requestDemoInterstitualToVideoAdvert {
-    self.demoAdTypeToShow = @"InterstitialToVideo";
-
-    [self requestAd];
-}
-
 #pragma mark - Location
 
 - (void)setLocationWithLatitude:(CGFloat)latitude longitude:(CGFloat)longitude {
@@ -537,6 +519,10 @@ static float animationDuration = 0.50;
 
 - (void)requestAd
 {
+    if(!enableVideoAds) {
+        prioritizeVideoAds = NO;
+    }
+    
     if (self.advertLoaded || self.advertViewActionInProgress || advertRequestInProgress) {
         return;
     }
@@ -566,18 +552,238 @@ static float animationDuration = 0.50;
 
 		return;
 	}
-	[self performSelectorInBackground:@selector(asyncRequestAdWithPublisherId:) withObject:publisherId];
+    advertRequestInProgress = YES;
+    alreadyRequestedInterstitial = NO;
+    alreadyRequestedVideo = NO;
+    
+    if (enableInterstitialAds && !prioritizeVideoAds) {
+        [self performSelectorInBackground:@selector(asyncRequestAdWithPublisherId:) withObject:publisherId];
+    } else if(enableVideoAds) {
+        [self performSelectorInBackground:@selector(asyncRequestVideoAdWithPublisherId:) withObject:publisherId];
+    } else {
+        NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"Error creating ad- both video and interstitial ads disabled" forKey:NSLocalizedDescriptionKey];
+        NSError *error = [NSError errorWithDomain:MobFoxVideoInterstitialErrorDomain code:MobFoxInterstitialViewErrorUnknown userInfo:userInfo];
+        [self performSelectorOnMainThread:@selector(reportError:) withObject:error waitUntilDone:YES];
+        advertRequestInProgress = NO;
+        return;
+    }
+	
 
 }
 
 - (void)asyncRequestAdWithPublisherId:(NSString *)publisherId
 {
-	@autoreleasepool 
+    alreadyRequestedInterstitial = YES;
+	@autoreleasepool
 	{
-        advertRequestInProgress = YES;
+        NSString *mRaidCapable = @"1";
+        
+        
+        NSString *adWidth;
+        NSString *adHeight;
+        
+        int r = arc4random_uniform(50000);
+        NSString *random = [NSString stringWithFormat:@"%d", r];
+        
+        UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
 
-        NSString *mRaidCapable = @"0";
+        NSString *adStrict = @"0";
+        
+        NSString *requestType;
+        requestedAdOrientation = interfaceOrientation;
+        if (UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone)
+        {
+            if (UIInterfaceOrientationIsPortrait(interfaceOrientation)) {
+                adWidth = @"320";
+                adHeight = @"480";
+            } else {
+                adWidth = @"480";
+                adHeight = @"320";
+            }
+            requestType = @"iphone_app";
+        }
+        else
+        {
+            if (UIInterfaceOrientationIsPortrait(interfaceOrientation)) {
+                adWidth = @"768";
+                adHeight = @"1024";
+            } else {
+                adWidth = @"1024";
+                adHeight = @"768";
+            }
 
+            requestType = @"ipad_app";
+        }
+        
+        NSString *osVersion = [UIDevice currentDevice].systemVersion;
+        
+        NSString *requestString;
+        
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 60000
+        NSString *iosadvid;
+        if ([ASIdentifierManager instancesRespondToSelector:@selector(advertisingIdentifier )]) {
+            iosadvid = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+            NSString *o_iosadvidlimit = @"0";
+            if (NSClassFromString(@"ASIdentifierManager")) {
+                
+                if (![ASIdentifierManager sharedManager].advertisingTrackingEnabled) {
+                    o_iosadvidlimit = @"1";
+                }
+            }
+            
+            requestString=[NSString stringWithFormat:@"c.mraid=%@&c_customevents=1&r_type=banner&o_iosadvidlimit=%@&rt=%@&u=%@&u_wv=%@&u_br=%@&o_iosadvid=%@&v=%@&s=%@&iphone_osversion=%@&r_random=%@",
+						   [mRaidCapable stringByUrlEncoding],
+						   [o_iosadvidlimit stringByUrlEncoding],
+						   [requestType stringByUrlEncoding],
+						   [self.userAgent stringByUrlEncoding],
+						   [self.userAgent stringByUrlEncoding],
+						   [[self browserAgentString] stringByUrlEncoding],
+						   [iosadvid stringByUrlEncoding],
+						   [SDK_VERSION stringByUrlEncoding],
+						   [publisherId stringByUrlEncoding],
+						   [osVersion stringByUrlEncoding],
+                           [random stringByUrlEncoding]];
+            
+        } else {
+			requestString=[NSString stringWithFormat:@"c.mraid=%@&c_customevents=1&r_type=banner&rt=%@&u=%@&u_wv=%@&u_br=%@&v=%@&s=%@&iphone_osversion=%@&r_random=%@",
+                           [mRaidCapable stringByUrlEncoding],
+                           [requestType stringByUrlEncoding],
+                           [self.userAgent stringByUrlEncoding],
+                           [self.userAgent stringByUrlEncoding],
+                           [[self browserAgentString] stringByUrlEncoding],
+                           [SDK_VERSION stringByUrlEncoding],
+                           [publisherId stringByUrlEncoding],
+                           [osVersion stringByUrlEncoding],
+                           [random stringByUrlEncoding]];
+            
+        }
+#else
+        
+        requestString=[NSString stringWithFormat:@"c.mraid=%@&c_customevents=1&r_type=banner&rt=%@&u=%@&u_wv=%@&u_br=%@&v=%@&s=%@&iphone_osversion=%@&r_random=%@",
+                       [mRaidCapable stringByUrlEncoding],
+                       [requestType stringByUrlEncoding],
+                       [self.userAgent stringByUrlEncoding],
+                       [self.userAgent stringByUrlEncoding],
+                       [[self browserAgentString] stringByUrlEncoding],
+                       [SDK_VERSION stringByUrlEncoding],
+                       [publisherId stringByUrlEncoding],
+                       [osVersion stringByUrlEncoding],
+                       [random stringByUrlEncoding]];
+        
+#endif
+        NSString *requestStringWithLocation;
+        if(locationAwareAdverts && self.currentLatitude && self.currentLongitude)
+        {
+            NSString *latitudeString = [NSString stringWithFormat:@"%+.6f", self.currentLatitude];
+            NSString *longitudeString = [NSString stringWithFormat:@"%+.6f", self.currentLongitude];
+            
+            requestStringWithLocation = [NSString stringWithFormat:@"%@&latitude=%@&longitude=%@",
+                                         requestString,
+                                         [latitudeString stringByUrlEncoding],
+                                         [longitudeString stringByUrlEncoding]
+                                         ];
+        }
+        else
+        {
+            requestStringWithLocation = requestString;
+        }
+        
+        NSString *fullRequestString;
+
+        fullRequestString = [NSString stringWithFormat:@"%@&adspace.width=%@&adspace.height=%@&adspace.strict=%@",
+                                 requestStringWithLocation,
+                                 [adWidth stringByUrlEncoding],
+                                 [adHeight stringByUrlEncoding],
+                                 [adStrict stringByUrlEncoding]
+                                 ];
+
+        if([userGender isEqualToString:@"female"]) {
+            fullRequestString = [NSString stringWithFormat:@"%@&demo.gender=f",
+                                 fullRequestString];
+        } else if([userGender isEqualToString:@"male"]) {
+            fullRequestString = [NSString stringWithFormat:@"%@&demo.gender=m",
+                                 fullRequestString];
+        }
+        if(userAge) {
+            NSString *age = [NSString stringWithFormat:@"%d",(int)userAge];
+            fullRequestString = [NSString stringWithFormat:@"%@&demo.age=%@",
+                                 fullRequestString,
+                                 [age stringByUrlEncoding]];
+        }
+        if(keywords) {
+            NSString *words = [keywords componentsJoinedByString:@","];
+            fullRequestString = [NSString stringWithFormat:@"%@&demo.keywords=%@",
+                                 fullRequestString,
+                                 words];
+            
+        }
+
+        
+        NSURL *serverURL = [self serverURL];
+        
+        if (!serverURL) {
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"Error - no or invalid requestURL. Please set requestURL" forKey:NSLocalizedDescriptionKey];
+            
+            NSError *error = [NSError errorWithDomain:MobFoxVideoInterstitialErrorDomain code:MobFoxInterstitialViewErrorUnknown userInfo:userInfo];
+            [self performSelectorOnMainThread:@selector(reportError:) withObject:error waitUntilDone:YES];
+            return;
+        }
+        
+        NSURL *url;
+        url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", serverURL, fullRequestString]];
+
+        
+        NSMutableURLRequest *request;
+        NSError *error;
+        NSURLResponse *response;
+        NSData *dataReply;
+        
+        request = [NSMutableURLRequest requestWithURL:url];
+        [request setHTTPMethod: @"GET"];
+        [request setValue:@"text/xml" forHTTPHeaderField:@"Accept"];
+        [request setValue:self.userAgent forHTTPHeaderField:@"User-Agent"];
+        
+        dataReply = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+        
+        DTXMLDocument *xml = [DTXMLDocument documentWithData:dataReply];
+        
+        if (!xml)
+        {
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"Error parsing xml response from server" forKey:NSLocalizedDescriptionKey];
+            
+            NSError *error = [NSError errorWithDomain:MobFoxVideoInterstitialErrorDomain code:MobFoxInterstitialViewErrorUnknown userInfo:userInfo];
+            [self performSelectorOnMainThread:@selector(reportError:) withObject:error waitUntilDone:YES];
+            return;
+        }
+        NSString *bannerUrlString = [xml.documentRoot getNamedChild:@"imageurl"].text;
+        
+        if ([bannerUrlString length])
+        {
+            NSURL *bannerUrl = [NSURL URLWithString:bannerUrlString];
+            _bannerImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:bannerUrl]];
+        }
+        
+        [self performSelectorOnMainThread:@selector(advertCreateFromXML:) withObject:xml waitUntilDone:YES];
+        
+	}
+    
+}
+
+
+- (void)asyncRequestVideoAdWithPublisherId:(NSString *)publisherId
+{
+    alreadyRequestedVideo = YES;
+	@autoreleasepool
+	{
+        NSString *mRaidCapable = @"1";
+        
+        NSString *adWidth = @"320";
+        NSString *adHeight = @"480";
+        NSString *adStrict = @"0";
+        
+        int r = arc4random_uniform(50000);
+        NSString *random = [NSString stringWithFormat:@"%d", r];
+        
         NSString *requestType;
         if (UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone)
         {
@@ -587,199 +793,175 @@ static float animationDuration = 0.50;
         {
             requestType = @"ipad_app";
         }
+        
         NSString *osVersion = [UIDevice currentDevice].systemVersion;
-
-        NSString *timestamp = [NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]];
-
+        
         NSString *requestString;
-
+        
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 60000
         NSString *iosadvid;
         if ([ASIdentifierManager instancesRespondToSelector:@selector(advertisingIdentifier )]) {
             iosadvid = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
-
             NSString *o_iosadvidlimit = @"0";
             if (NSClassFromString(@"ASIdentifierManager")) {
-
+                
                 if (![ASIdentifierManager sharedManager].advertisingTrackingEnabled) {
                     o_iosadvidlimit = @"1";
                 }
             }
-
-            if (self.locationAwareAdverts && self.currentLatitude && self.currentLongitude) {
-
-                NSString *latitudeString = [NSString stringWithFormat:@"%+.6f", self.currentLatitude];
-                NSString *longitudeString = [NSString stringWithFormat:@"%+.6f", self.currentLongitude];
-
-                requestString=[NSString stringWithFormat:@"c.mraid=%@&o_iosadvidlimit=%@&u=%@&u_wv=%@&u_br=%@&v=%@&s=%@&iphone_osversion=%@&o_iosadvid=%@&rt=%@&t=%@&i=%@&lon=%@&lat=%@",
-                               [mRaidCapable stringByUrlEncoding],
-                               [o_iosadvidlimit stringByUrlEncoding],
-                               [self.userAgent stringByUrlEncoding],
-                               [self.userAgent stringByUrlEncoding],
-                               [[self browserAgentString] stringByUrlEncoding],
-                               [SDK_VERSION stringByUrlEncoding],
-                               [publisherId stringByUrlEncoding],
-                               [osVersion stringByUrlEncoding],
-                               [iosadvid stringByUrlEncoding],
-                               [requestType stringByUrlEncoding],
-                               [timestamp stringByUrlEncoding],
-                               [self.IPAddress stringByUrlEncoding],
-                               [longitudeString stringByUrlEncoding],
-                               [latitudeString stringByUrlEncoding]];
-
-            } else {
-
-                requestString=[NSString stringWithFormat:@"c.mraid=%@&o_iosadvidlimit=%@&u=%@&u_wv=%@&u_br=%@&v=%@&s=%@&iphone_osversion=%@&o_iosadvid=%@&rt=%@&t=%@&i=%@",
-                               [mRaidCapable stringByUrlEncoding],
-                               [o_iosadvidlimit stringByUrlEncoding],
-                               [self.userAgent stringByUrlEncoding],
-                               [self.userAgent stringByUrlEncoding],
-                               [[self browserAgentString] stringByUrlEncoding],
-                               [SDK_VERSION stringByUrlEncoding],
-                               [publisherId stringByUrlEncoding],
-                               [osVersion stringByUrlEncoding],
-                               [iosadvid stringByUrlEncoding],
-                               [requestType stringByUrlEncoding],
-                               [timestamp stringByUrlEncoding],
-                               [self.IPAddress stringByUrlEncoding]];
-
-            }
-
+            
+            requestString=[NSString stringWithFormat:@"c.mraid=%@&c_customevents=1&r_type=video&r_resp=vast20&o_iosadvidlimit=%@&rt=%@&u=%@&u_wv=%@&u_br=%@&o_iosadvid=%@&v=%@&s=%@&iphone_osversion=%@&r_random=%@",
+						   [mRaidCapable stringByUrlEncoding],
+						   [o_iosadvidlimit stringByUrlEncoding],
+						   [requestType stringByUrlEncoding],
+						   [self.userAgent stringByUrlEncoding],
+						   [self.userAgent stringByUrlEncoding],
+						   [[self browserAgentString] stringByUrlEncoding],
+						   [iosadvid stringByUrlEncoding],
+						   [SDK_VERSION stringByUrlEncoding],
+						   [publisherId stringByUrlEncoding],
+						   [osVersion stringByUrlEncoding],
+                           [random stringByUrlEncoding]];
+            
         } else {
-
-            if (self.locationAwareAdverts && self.currentLatitude && self.currentLongitude) {
-
-                NSString *latitudeString = [NSString stringWithFormat:@"%+.6f", self.currentLatitude];
-                NSString *longitudeString = [NSString stringWithFormat:@"%+.6f", self.currentLongitude];
-
-                requestString=[NSString stringWithFormat:@"c.mraid=%@&u=%@&u_wv=%@&u_br=%@&v=%@&s=%@&iphone_osversion=%@&rt=%@&t=%@&i=%@&lon=%@&lat=%@",
-                               [mRaidCapable stringByUrlEncoding],
-                               [self.userAgent stringByUrlEncoding],
-                               [self.userAgent stringByUrlEncoding],
-                               [[self browserAgentString] stringByUrlEncoding],
-                               [SDK_VERSION stringByUrlEncoding],
-                               [publisherId stringByUrlEncoding],
-                               [osVersion stringByUrlEncoding],
-                               [requestType stringByUrlEncoding],
-                               [timestamp stringByUrlEncoding],
-                               [self.IPAddress stringByUrlEncoding],
-                               [longitudeString stringByUrlEncoding],
-                               [latitudeString stringByUrlEncoding]];
-
-            } else {
-
-                requestString=[NSString stringWithFormat:@"c.mraid=%@&u=%@&u_wv=%@&u_br=%@&v=%@&s=%@&iphone_osversion=%@&rt=%@&t=%@&i=%@",
-                               [mRaidCapable stringByUrlEncoding],
-                               [self.userAgent stringByUrlEncoding],
-                               [self.userAgent stringByUrlEncoding],
-                               [[self browserAgentString] stringByUrlEncoding],
-                               [SDK_VERSION stringByUrlEncoding],
-                               [publisherId stringByUrlEncoding],
-                               [osVersion stringByUrlEncoding],
-                               [requestType stringByUrlEncoding],
-                               [timestamp stringByUrlEncoding],
-                               [self.IPAddress stringByUrlEncoding]];
-            }
-
+			requestString=[NSString stringWithFormat:@"c.mraid=%@&c_customevents=1&r_type=video&r_resp=vast20&rt=%@&u=%@&u_wv=%@&u_br=%@&v=%@&s=%@&iphone_osversion=%@&r_random=%@",
+                           [mRaidCapable stringByUrlEncoding],
+                           [requestType stringByUrlEncoding],
+                           [self.userAgent stringByUrlEncoding],
+                           [self.userAgent stringByUrlEncoding],
+                           [[self browserAgentString] stringByUrlEncoding],
+                           [SDK_VERSION stringByUrlEncoding],
+                           [publisherId stringByUrlEncoding],
+                           [osVersion stringByUrlEncoding],
+                           [random stringByUrlEncoding]];
+            
         }
 #else
-
-        if (self.locationAwareAdverts && self.currentLatitude && self.currentLongitude) {
-
+        
+        requestString=[NSString stringWithFormat:@"c.mraid=%@&c_customevents=1&r_type=video&r_resp=vast20&rt=%@&u=%@&u_wv=%@&u_br=%@&v=%@&s=%@&iphone_osversion=%@&r_random=%@",
+                       [mRaidCapable stringByUrlEncoding],
+                       [requestType stringByUrlEncoding],
+                       [self.userAgent stringByUrlEncoding],
+                       [self.userAgent stringByUrlEncoding],
+                       [[self browserAgentString] stringByUrlEncoding],
+                       [SDK_VERSION stringByUrlEncoding],
+                       [publisherId stringByUrlEncoding],
+                       [osVersion stringByUrlEncoding],
+                       [random stringByUrlEncoding]];
+        
+#endif
+        NSString *requestStringWithLocation;
+        if(locationAwareAdverts && self.currentLatitude && self.currentLongitude)
+        {
             NSString *latitudeString = [NSString stringWithFormat:@"%+.6f", self.currentLatitude];
             NSString *longitudeString = [NSString stringWithFormat:@"%+.6f", self.currentLongitude];
-
-            requestString=[NSString stringWithFormat:@"c.mraid=%@&u=%@&u_wv=%@&u_br=%@&v=%@&s=%@&iphone_osversion=%@&rt=%@&t=%@&i=%@&lon=%@&lat=%@",
-                           [mRaidCapable stringByUrlEncoding],
-                           [self.userAgent stringByUrlEncoding],
-                           [self.userAgent stringByUrlEncoding],
-                           [[self browserAgentString] stringByUrlEncoding],
-                           [SDK_VERSION stringByUrlEncoding],
-                           [publisherId stringByUrlEncoding],
-                           [osVersion stringByUrlEncoding],
-                           [requestType stringByUrlEncoding],
-                           [timestamp stringByUrlEncoding],
-                           [self.IPAddress stringByUrlEncoding],
-                           [longitudeString stringByUrlEncoding],
-                           [latitudeString stringByUrlEncoding]];
-
-        } else {
-
-            requestString=[NSString stringWithFormat:@"c.mraid=%@&u=%@&u_wv=%@&u_br=%@&v=%@&s=%@&iphone_osversion=%@&rt=%@&t=%@&i=%@",
-                           [mRaidCapable stringByUrlEncoding],
-                           [self.userAgent stringByUrlEncoding],
-                           [self.userAgent stringByUrlEncoding],
-                           [[self browserAgentString] stringByUrlEncoding],
-                           [SDK_VERSION stringByUrlEncoding],
-                           [publisherId stringByUrlEncoding],
-                           [osVersion stringByUrlEncoding],
-                           [requestType stringByUrlEncoding],
-                           [timestamp stringByUrlEncoding],
-                           [self.IPAddress stringByUrlEncoding]];
+            
+            requestStringWithLocation = [NSString stringWithFormat:@"%@&latitude=%@&longitude=%@",
+                                         requestString,
+                                         [latitudeString stringByUrlEncoding],
+                                         [longitudeString stringByUrlEncoding]
+                                         ];
         }
-
-#endif
+        else
+        {
+            requestStringWithLocation = requestString;
+        }
+        
+        NSString *fullRequestString;
+        
+        fullRequestString = [NSString stringWithFormat:@"%@&adspace.width=%@&adspace.height=%@&adspace.strict=%@",
+                             requestStringWithLocation,
+                             [adWidth stringByUrlEncoding],
+                             [adHeight stringByUrlEncoding],
+                             [adStrict stringByUrlEncoding]
+                             ];
+        
+        if([userGender isEqualToString:@"female"]) {
+            fullRequestString = [NSString stringWithFormat:@"%@&demo.gender=f",
+                                 fullRequestString];
+        } else if([userGender isEqualToString:@"male"]) {
+            fullRequestString = [NSString stringWithFormat:@"%@&demo.gender=m",
+                                 fullRequestString];
+        }
+        if(userAge) {
+            NSString *age = [NSString stringWithFormat:@"%d",(int)userAge];
+            fullRequestString = [NSString stringWithFormat:@"%@&demo.age=%@",
+                                 fullRequestString,
+                                 [age stringByUrlEncoding]];
+        }
+        if(keywords) {
+            NSString *words = [keywords componentsJoinedByString:@","];
+            fullRequestString = [NSString stringWithFormat:@"%@&demo.keywords=%@",
+                                 fullRequestString,
+                                 words];
+            
+        }
+        
+        if(video_min_duration) {
+            NSString *minDuration = [NSString stringWithFormat:@"%d",(int)video_min_duration];
+            fullRequestString = [NSString stringWithFormat:@"%@&v_dur_min=%@",
+                                 fullRequestString,
+                                 [minDuration stringByUrlEncoding]];
+        }
+        
+        if(video_max_duration) {
+            NSString *maxDuration = [NSString stringWithFormat:@"%d",(int)video_max_duration];
+            fullRequestString = [NSString stringWithFormat:@"%@&v_dur_max=%@",
+                                 fullRequestString,
+                                 [maxDuration stringByUrlEncoding]];
+        }
+        
+        
         NSURL *serverURL = [self serverURL];
-
+        
         if (!serverURL) {
             NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"Error - no or invalid requestURL. Please set requestURL" forKey:NSLocalizedDescriptionKey];
-
+            
             NSError *error = [NSError errorWithDomain:MobFoxVideoInterstitialErrorDomain code:MobFoxInterstitialViewErrorUnknown userInfo:userInfo];
             [self performSelectorOnMainThread:@selector(reportError:) withObject:error waitUntilDone:YES];
             return;
         }
-
+        
         NSURL *url;
-        if ([serverURL isEqual:@"http://my.mobfox.com/vrequest.php"]) {
-            url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", serverURL, requestString]];
-        } else {
-            url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?sdk=vad&%@", serverURL, requestString]];
-        }
-
+        url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", serverURL, fullRequestString]];
+        
+        
         NSMutableURLRequest *request;
         NSError *error;
         NSURLResponse *response;
         NSData *dataReply;
-
+        
         request = [NSMutableURLRequest requestWithURL:url];
         [request setHTTPMethod: @"GET"];
         [request setValue:@"text/xml" forHTTPHeaderField:@"Accept"];
         [request setValue:self.userAgent forHTTPHeaderField:@"User-Agent"];
-
+        
         dataReply = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-        if ([self.demoAdTypeToShow isEqualToString:@"Video"]) {
-            NSString *filePath = [[NSBundle mainBundle] pathForResource:@"Video_Example_Newer" ofType:@"xml"];
-            dataReply = [NSData dataWithContentsOfFile:filePath];
-        }
-        if ([self.demoAdTypeToShow isEqualToString:@"Interstitial"]) {
-            NSString *filePath = [[NSBundle mainBundle] pathForResource:@"Interstitial_Example_Newer" ofType:@"xml"];
-            dataReply = [NSData dataWithContentsOfFile:filePath];
-        }
-        if ([self.demoAdTypeToShow isEqualToString:@"VideoToInterstitial"]) {
-            NSString *filePath = [[NSBundle mainBundle] pathForResource:@"VideoToInterstitial_Example" ofType:@"xml"];
-            dataReply = [NSData dataWithContentsOfFile:filePath];
-        }
-        if ([self.demoAdTypeToShow isEqualToString:@"InterstitialToVideo"]) {
-            NSString *filePath = [[NSBundle mainBundle] pathForResource:@"InterstitialToVideo_Example" ofType:@"xml"];
-            dataReply = [NSData dataWithContentsOfFile:filePath];
-        }
+        
         DTXMLDocument *xml = [DTXMLDocument documentWithData:dataReply];
-
+        
         if (!xml)
         {
-            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"Invalid xml response from server" forKey:NSLocalizedDescriptionKey];
-
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"Error parsing xml response from server" forKey:NSLocalizedDescriptionKey];
+            
             NSError *error = [NSError errorWithDomain:MobFoxVideoInterstitialErrorDomain code:MobFoxInterstitialViewErrorUnknown userInfo:userInfo];
             [self performSelectorOnMainThread:@selector(reportError:) withObject:error waitUntilDone:YES];
             return;
         }
-
+        NSString *bannerUrlString = [xml.documentRoot getNamedChild:@"imageurl"].text;
+        
+        if ([bannerUrlString length])
+        {
+            NSURL *bannerUrl = [NSURL URLWithString:bannerUrlString];
+            _bannerImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:bannerUrl]];
+        }
+        
         [self performSelectorOnMainThread:@selector(advertCreateFromXML:) withObject:xml waitUntilDone:YES];
-
-        self.demoAdTypeToShow = @"";
-
+        
 	}
+    
 }
+
 
 #pragma mark - Ad Creation
 
@@ -787,120 +969,124 @@ static float animationDuration = 0.50;
 {
 	if ([xml.documentRoot.name isEqualToString:@"error"])
 	{
-		NSString *errorMsg = xml.documentRoot.text;
+        if (enableInterstitialAds && !alreadyRequestedInterstitial && !_customEventFullscreen) {
+            NSString *publisherId = [delegate publisherIdForMobFoxVideoInterstitialView:self];
+            [self performSelectorInBackground:@selector(asyncRequestAdWithPublisherId:) withObject:publisherId];
+        } else if (enableVideoAds && !alreadyRequestedVideo && !_customEventFullscreen) {
+            NSString *publisherId = [delegate publisherIdForMobFoxVideoInterstitialView:self];
+            [self performSelectorInBackground:@selector(asyncRequestVideoAdWithPublisherId:) withObject:publisherId];
+        } else {
+            NSString *errorMsg = xml.documentRoot.text;
 
-		NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errorMsg forKey:NSLocalizedDescriptionKey];
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errorMsg forKey:NSLocalizedDescriptionKey];
 
-		NSError *error = [NSError errorWithDomain:MobFoxVideoInterstitialErrorDomain code:MobFoxInterstitialViewErrorUnknown userInfo:userInfo];
-		[self performSelectorOnMainThread:@selector(reportError:) withObject:error waitUntilDone:YES];
-		return;	
+            NSError *error = [NSError errorWithDomain:MobFoxVideoInterstitialErrorDomain code:MobFoxInterstitialViewErrorUnknown userInfo:userInfo];
+            [self performSelectorOnMainThread:@selector(reportError:) withObject:error waitUntilDone:YES];
+        }
+		return;
 	}
-    NSString *adType = [xml.documentRoot.attributes objectForKey:@"type"];
-    self.advertAnimation = [xml.documentRoot.attributes objectForKey:@"animation"];
-
+    NSString *adType;
+    if([xml.documentRoot.name isEqualToString:@"VAST"]) {
+        adType = @"vastAd";
+    } else {
+        adType = [xml.documentRoot.attributes objectForKey:@"type"];
+    }
+    
     advertTypeCurrentlyPlaying = [self adTypeEnumValue:adType];
-
+    
     videoWasSkipped = NO;
     videoCheckLoadedCount = 0;
+    
+    //custom events:
 
+    _customEventFullscreen = nil;
+    [customEvents removeAllObjects];
+    DTXMLElement *customEventsElement = [xml.documentRoot getNamedChild:@"customevents"];
+    if(customEventsElement)
+    {
+        NSArray *customEventElements = [customEventsElement getNamedChildren:@"customevent"];
+        for(int i=0; i<[customEventElements count];i++)
+        {
+            @try {
+                DTXMLElement *customEventElement = [customEventElements objectAtIndex:i];
+                CustomEvent *customEvent = [[CustomEvent alloc] init];
+                customEvent.className = [customEventElement getNamedChild:@"class"].text;
+                customEvent.optionalParameter = [customEventElement getNamedChild:@"parameter"].text;
+                customEvent.pixelUrl = [customEventElement getNamedChild:@"pixel"].text;
+                [customEvents addObject:customEvent];
+            }
+            @catch (NSException *exception) {
+                NSLog(@"Error creating custom event");
+            }
+        }
+    }
+    
+    if([customEvents count] > 0)
+    {
+        [self loadCustomEvent];
+        if(!_customEventFullscreen)
+        {
+            [customEvents removeAllObjects];
+        }
+    }
+    //eo custom events
+    
+    NSString *publisherId = [delegate publisherIdForMobFoxVideoInterstitialView:self];
     switch (advertTypeCurrentlyPlaying) {
         case MobFoxAdTypeVideo:{
 
-            DTXMLElement *videoElement = [xml.documentRoot getNamedChild:@"video"];
-
-            adVideoOrientation = [videoElement.attributes objectForKey:@"orientation"];
-            if ([self videoCreateAdvert:videoElement]) {
+            if ([self videoCreateAdvert:xml.documentRoot]) {
 
                 [self checkVideoLoadedAndReadyToPlay];
 
-            } else {
+            } else if (enableInterstitialAds && !alreadyRequestedInterstitial && !_customEventFullscreen) {
+                [self performSelectorInBackground:@selector(asyncRequestAdWithPublisherId:) withObject:publisherId];
+            } else if(!_customEventFullscreen){
                 [self videoFailedToLoad];
             }
-
             break;
         }
-
-        case MobFoxAdTypeInterstitial:{
-
-            DTXMLElement *interstitialElement = [xml.documentRoot getNamedChild:@"interstitial"];
-
-            adInterstitialOrientation = [interstitialElement.attributes objectForKey:@"orientation"];
-            if ([self interstitialCreateAdvert:interstitialElement]) {
-
-                [self advertCreatedSuccessfully:MobFoxAdTypeInterstitial];
-
-            } else {
-                [self advertCreationFailed];
-            }
-            break;
-
-        }
-
-        case MobFoxAdTypeVideoToInterstitial:{
-
-            adVideoOrientation = [[xml.documentRoot getNamedChild:@"video"].attributes objectForKey:@"orientation"]; 
-            adInterstitialOrientation = [[xml.documentRoot getNamedChild:@"interstitial"].attributes objectForKey:@"orientation"];
-
-            DTXMLElement *videoElement = [xml.documentRoot getNamedChild:@"video"];
-            DTXMLElement *interstitialElement = [xml.documentRoot getNamedChild:@"interstitial"];
-
-            if ([self videoCreateAdvert:videoElement]) {
-
-                NSNumber *adType = [NSNumber numberWithInt:MobFoxAdTypeVideoToInterstitial];
-
-                NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-                                            interstitialElement, @"interstitialElement",
-                                            adType, @"adType", nil];
-                [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(checkVideoToInterstitialVideoLoadedAndReadyToPlay:) userInfo:dictionary repeats:NO];
-
-            } else {
+            
+        case MobFoxAdTypeText:
+        case MobFoxAdTypeImage:
+        case MobFoxAdTypeMraid: {
+            if ([self interstitialFromBannerCreateAdvert:xml]) {
+                if(!_customEventFullscreen) {
+                    [self advertCreatedSuccessfully:advertTypeCurrentlyPlaying];
+                } else {
+                    self.advertLoaded = YES;
+                }
+            } else if (enableVideoAds && !alreadyRequestedVideo && !_customEventFullscreen) {
+                [self performSelectorInBackground:@selector(asyncRequestVideoAdWithPublisherId:) withObject:publisherId];
+            } else if(!_customEventFullscreen){
                 [self videoFailedToLoad];
             }
-
             break;
         }
-
-        case MobFoxAdTypeInterstitialToVideo:{
-
-            adVideoOrientation = [[xml.documentRoot getNamedChild:@"video"].attributes objectForKey:@"orientation"];
-            adInterstitialOrientation = [[xml.documentRoot getNamedChild:@"interstitial"].attributes objectForKey:@"orientation"];
-
-            DTXMLElement *videoElement = [xml.documentRoot getNamedChild:@"video"];
-            DTXMLElement *interstitialElement = [xml.documentRoot getNamedChild:@"interstitial"];
-
-            if ([self videoCreateAdvert:videoElement]) {
-
-                NSNumber *adType = [NSNumber numberWithInt:MobFoxAdTypeInterstitialToVideo];
-
-                NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-                                            interstitialElement, @"interstitialElement",
-                                            adType, @"adType", nil];
-                [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(checkVideoToInterstitialVideoLoadedAndReadyToPlay:) userInfo:dictionary repeats:NO];
-
-            } else {
-                [self videoFailedToLoad];
-            }
-
-            break;
-        }
+            
         case MobFoxAdTypeNoAdInventory:{
-
-            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"No inventory for ad request" forKey:NSLocalizedDescriptionKey];
-
-            NSError *error = [NSError errorWithDomain:MobFoxVideoInterstitialErrorDomain code:MobFoxInterstitialViewErrorInventoryUnavailable userInfo:userInfo];
-            [self performSelectorOnMainThread:@selector(reportError:) withObject:error waitUntilDone:YES];
-            return;
+            if (alreadyRequestedInterstitial && enableVideoAds && !alreadyRequestedVideo && !_customEventFullscreen) {
+                [self performSelectorInBackground:@selector(asyncRequestVideoAdWithPublisherId:) withObject:publisherId];
+            } else if (alreadyRequestedVideo && enableInterstitialAds && !alreadyRequestedInterstitial && !_customEventFullscreen) {
+                [self performSelectorInBackground:@selector(asyncRequestAdWithPublisherId:) withObject:publisherId];
+            } else if(!_customEventFullscreen)
+            {
+                NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"No inventory for ad request" forKey:NSLocalizedDescriptionKey];
+                NSError *error = [NSError errorWithDomain:MobFoxVideoInterstitialErrorDomain code:MobFoxInterstitialViewErrorInventoryUnavailable userInfo:userInfo];
+                [self performSelectorOnMainThread:@selector(reportError:) withObject:error waitUntilDone:YES];
+            }
+                return;
 
             break;
         }
         case MobFoxAdTypeError:{
-
             NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"Unknown error" forKey:NSLocalizedDescriptionKey];
 
             NSError *error = [NSError errorWithDomain:MobFoxVideoInterstitialErrorDomain code:MobFoxInterstitialViewErrorUnknown userInfo:userInfo];
             [self performSelectorOnMainThread:@selector(reportError:) withObject:error waitUntilDone:YES];
             break;
         }
+
 
         default: {
             NSDictionary *userInfo = [NSDictionary dictionaryWithObject:[NSString stringWithFormat:@"Unknown ad type '%@'", adType] forKey:NSLocalizedDescriptionKey];
@@ -914,830 +1100,336 @@ static float animationDuration = 0.50;
 
 }
 
-- (BOOL)interstitialCreateAdvert:(DTXMLElement*)interstitialElement {
-    interstitialAutoCloseDelay = [[interstitialElement.attributes objectForKey:@"autoclose"] doubleValue];
-    interstitialAutoCloseDisabled = (interstitialAutoCloseDelay == 0);
+- (void) loadCustomEvent
+{
+    _customEventFullscreen = nil;
+    while ([customEvents count] > 0 && !_customEventFullscreen)
+    {
+        @try
+        {
+            CustomEvent *event = [customEvents objectAtIndex:0];
+            [customEvents removeObjectAtIndex:0];
+            NSString* className = [NSString stringWithFormat:@"%@CustomEventFullscreen",event.className];
+            Class customClass = NSClassFromString(className);
+            if(customClass) {
+                _customEventFullscreen = [[customClass alloc]init];
+                _customEventFullscreen.delegate = self;
+                [_customEventFullscreen loadFullscreenWithOptionalParameters:event.optionalParameter trackingPixel:event.pixelUrl];
+            } else {
+                NSLog(@"custom event for %@ not implemented!",event.className);
+            }
+        }
+        @catch (NSException *exception) {
+            _customEventFullscreen = nil;
+            NSLog( @"Exception while creating custom event!" );
+            NSLog( @"Name: %@", exception.name);
+            NSLog( @"Reason: %@", exception.reason );
+        }
+    }
+}
+
+- (BOOL)interstitialFromBannerCreateAdvert:(DTXMLDocument*)document {
+    interstitialAutoCloseDisabled = YES;
     interstitialSkipButtonDisplayed = NO;
 
-    NSString *interstitialURLorMarkup = [interstitialElement.attributes objectForKey:@"type"];
-    if ([interstitialURLorMarkup isEqualToString:@"url"]) {
-        self.interstitialURL = [interstitialElement.attributes objectForKey:@"url"];
-
-        if (self.interstitialURL) {
-            NSError* error = nil;
-            self.interstitialMarkup = [NSString stringWithContentsOfURL:[NSURL URLWithString:self.interstitialURL] encoding:NSUTF8StringEncoding error:&error];
-
-            interstitialLoadedFromURL = YES;
-        }
-
-    } else {
-
-        self.interstitialMarkup = [interstitialElement getNamedChild:@"markup"].text;
-
-        interstitialLoadedFromURL = NO;
-
+    DTXMLElement *customEventsElement = [document.documentRoot getNamedChild:@"customevents"];
+    if(customEventsElement) {
+        [document.documentRoot removeNamedChild:@"customevents"];
     }
 
-    if (self.interstitialMarkup) {
-        self.mobFoxInterstitialPlayerViewController = [[MobFoxInterstitialPlayerViewController alloc] init];
-        self.mobFoxInterstitialPlayerViewController.adInterstitialOrientation = adInterstitialOrientation;
-        self.mobFoxInterstitialPlayerViewController.view.backgroundColor = [UIColor clearColor];
-        self.mobFoxInterstitialPlayerViewController.view.frame = self.view.bounds;
-        self.mobFoxInterstitialPlayerViewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        self.interstitialHoldingView = [[UIView alloc] initWithFrame:self.view.bounds];
-        self.interstitialHoldingView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        self.interstitialHoldingView.backgroundColor = [UIColor clearColor];
-        self.interstitialHoldingView.autoresizesSubviews = YES;
-        self.interstitialWebView = [[UIWebView alloc]initWithFrame:self.view.bounds];
-        self.interstitialWebView.delegate = (id)self;
-        self.interstitialWebView.dataDetectorTypes = UIDataDetectorTypeAll;
-        self.interstitialWebView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        self.interstitialWebView.allowsInlineMediaPlayback = YES;
-        self.interstitialWebView.scalesPageToFit = YES;
+    
+    self.mobFoxInterstitialPlayerViewController = [[MobFoxInterstitialPlayerViewController alloc] init];
 
-        [self removeUIWebViewBounce:self.interstitialWebView];
-
-        [self interstitialLoadWebPage];
-        UITapGestureRecognizer *touch = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)]; 
-        touch.delegate = self;
-        [self.interstitialWebView addGestureRecognizer:touch];
-
-        DTXMLElement *navigationBarsElement = [interstitialElement getNamedChild:@"navigation"];
-
-        BOOL adInterstitialToolbarBarsShow = [[navigationBarsElement.attributes objectForKey:@"show"] isEqualToString:@"1"];
-
-        if (adInterstitialToolbarBarsShow) {
-            if ([self interstitialCreateTopToolbar:navigationBarsElement]) {
-                [self.interstitialHoldingView addSubview:self.interstitialTopToolbar];
-            }
-
-            if ([self interstitialCreateBottomToolbarBottomToolbar:navigationBarsElement]) {
-                [self.interstitialHoldingView addSubview:self.interstitialBottomToolbar];
-            }
-
-        }
-        self.interstitialWebView.frame = [self returnInterstitialWebFrame];
-        [self.interstitialHoldingView addSubview:self.interstitialWebView];
-        NSMutableDictionary *skipButtonElementAttributes = [interstitialElement getNamedChild:@"skipbutton"].attributes;
-        interstitialSkipButtonShow = [[skipButtonElementAttributes objectForKey:@"show"] isEqualToString:@"1"];
-        if(interstitialSkipButtonShow || !adInterstitialToolbarBarsShow) {
-
-            UIBarButtonItem *flexiblespace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:
-                                              UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-
-            interstitialSkipButtonDisplayDelay = (NSTimeInterval)[[skipButtonElementAttributes objectForKey:@"showafter"] doubleValue];
-            UIImage *buttonImage = [UIImage imageNamed:@""];
-            UIImage *buttonDisabledImage = [UIImage imageNamed:@""];
-
-            NSString *adSkipButtonGraphicURL = [skipButtonElementAttributes objectForKey:@"graphic"];
-
-            if (![adSkipButtonGraphicURL isEqualToString:@""]) {
-
-                NSURL *imageURL = [NSURL URLWithString:adSkipButtonGraphicURL];
-                buttonImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:imageURL]];
-                buttonDisabledImage = buttonImage;
-            }
-            if (!buttonImage) {
-                buttonImage = [UIImage mobfoxSkipButtonImage];
-                buttonDisabledImage = [UIImage mobfoxSkipButtonDisabledImage];
-            }
-
-            if (buttonImage) {
-                float skipButtonSize = buttonSize + 4.0f;
-
-                self.interstitialSkipButton=[UIButton buttonWithType:UIButtonTypeCustom];
-                [self.interstitialSkipButton setFrame:CGRectMake(0, 0, skipButtonSize, skipButtonSize)];
-                [self.interstitialSkipButton addTarget:self action:@selector(interstitialSkipAction:) forControlEvents:UIControlEventTouchUpInside];
-                [self.interstitialSkipButton setImage:buttonImage forState:UIControlStateNormal];
-                [self.interstitialSkipButton setImage:buttonDisabledImage forState:UIControlStateHighlighted];
-
-                if (self.interstitialTopToolbar) {
-                    UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:self.interstitialSkipButton];
-                    self.interstitialTopToolbarButtons = [NSMutableArray arrayWithArray:self.interstitialTopToolbar.items];
-                    [self.interstitialTopToolbarButtons addObject:flexiblespace];
-                    [self.interstitialTopToolbarButtons addObject:theButton];
-
-                }   else {
-
-                    self.interstitialSkipButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
-
-                } 
-            }
-
-        }
-        return YES;
-
+    if(UIInterfaceOrientationIsPortrait(requestedAdOrientation))
+    {
+        adInterstitialOrientation = @"portrait";
+    }
+    else
+    {
+        adInterstitialOrientation = @"landscape";
     }
 
-    return NO;
+    
+    [self updateAllFrames:requestedAdOrientation];
+    
+    self.mobFoxInterstitialPlayerViewController.adInterstitialOrientation = adInterstitialOrientation;
+    self.mobFoxInterstitialPlayerViewController.view.backgroundColor = [UIColor clearColor];
+    self.mobFoxInterstitialPlayerViewController.view.frame = self.view.bounds;
+//    self.mobFoxInterstitialPlayerViewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.interstitialHoldingView = [[UIView alloc] initWithFrame:self.view.bounds];
+//    self.interstitialHoldingView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.interstitialHoldingView.backgroundColor = [UIColor clearColor];
+    self.interstitialHoldingView.autoresizesSubviews = YES;
+    
+    MobFoxBannerView* bannerView = [[MobFoxBannerView alloc] initWithFrame:interstitialHoldingView.frame];
+
+    bannerView.allowDelegateAssigmentToRequestAd = NO;
+    bannerView.delegate = self;
+    bannerView.adspaceHeight = interstitialHoldingView.bounds.size.height;
+    bannerView.adspaceWidth = interstitialHoldingView.bounds.size.width;
+
+    bannerView.refreshTimerOff = YES;
+    
+    bannerView._bannerImage = _bannerImage;
+    [bannerView performSelectorOnMainThread:@selector(setupAdFromXml:) withObject:document waitUntilDone:YES];
+    
+    [self.interstitialHoldingView addSubview:bannerView];
+    
+    interstitialSkipButtonShow = YES;
+    
+    UIImage *buttonImage = [UIImage mobfoxSkipButtonImage];
+    UIImage *buttonDisabledImage = buttonDisabledImage = [UIImage mobfoxSkipButtonDisabledImage];
+    
+    float skipButtonSize = buttonSize + 4.0f;
+                
+    self.interstitialSkipButton=[UIButton buttonWithType:UIButtonTypeCustom];
+    [self.interstitialSkipButton setFrame:CGRectMake(0, 0, skipButtonSize, skipButtonSize)];
+    [self.interstitialSkipButton addTarget:self action:@selector(interstitialSkipAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self.interstitialSkipButton setImage:buttonImage forState:UIControlStateNormal];
+    [self.interstitialSkipButton setImage:buttonDisabledImage forState:UIControlStateHighlighted];
+  
+    self.interstitialSkipButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
+    [self showInterstitialSkipButton];
+    return [bannerView isBannerLoaded];
 }
 
-- (BOOL)interstitialCreateTopToolbar:(DTXMLElement*)xml {
 
-    NSMutableDictionary *topBarElementAttributes = [xml getNamedChild:@"topbar"].attributes;
-
-    BOOL topBarShow = [[topBarElementAttributes objectForKey:@"show"] isEqualToString:@"1"];
-
-    if (topBarShow) {
-        self.interstitialTopToolbar = [[MobFoxToolBar alloc] initWithFrame:CGRectZero];
-        self.interstitialTopToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-
-        self.interstitialTopToolbar.barStyle = UIBarStyleBlack;
-        self.interstitialTopToolbar.translucent = NO;
-
-        NSString *topBarCustomBackgroundURL = [topBarElementAttributes objectForKey:@"custombackgroundurl"];
-
-        if (![topBarCustomBackgroundURL isEqualToString:@""]) {
-
-            NSURL *imageURL = [NSURL URLWithString:topBarCustomBackgroundURL];
-            UIImage *theImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:imageURL]];
-            if(theImage) {
-                self.interstitialTopToolbar.backgroundImage = theImage;
-            } else {
-                self.interstitialTopToolbar.backgroundImage = [UIImage mobfoxToolBarImage];
-            }
-
-        } else {
-            self.interstitialTopToolbar.backgroundImage = [UIImage mobfoxToolBarImage];
-        }
-
-        NSString *titleType = [topBarElementAttributes objectForKey:@"title"];
-        NSString *titleContent = @"";
-
-        if([titleType isEqualToString:@"fixed"]) {
-            titleContent = [topBarElementAttributes objectForKey:@"titlecontent"];
-        }
-
-        if([titleType isEqualToString:@"variable"]) {
-
-            titleContent = [self extractStringFromContents:@"<title>" endingString:@"</title>" contents:self.interstitialMarkup];
-        }
-        if (titleContent && self.interstitialTopToolbar) {
-
-            UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 250, 44)];
-            [titleLabel setFont:[UIFont boldSystemFontOfSize:20]];
-            titleLabel.backgroundColor = [UIColor clearColor];
-            titleLabel.textColor = [UIColor whiteColor];
-            titleLabel.shadowColor = [UIColor blackColor];
-            titleLabel.shadowOffset = CGSizeMake(1.0,-1.0);
-            titleLabel.text = titleContent;
-
-            UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:titleLabel];
-
-            NSMutableArray *topBarItems = [NSMutableArray arrayWithArray:self.interstitialTopToolbar.items];
-            [topBarItems addObject:theButton];
-            self.interstitialTopToolbar.items = topBarItems;
-
-        }
-        UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];;
-        [self applyToolbarFrame:self.interstitialTopToolbar bottomToolbar:NO orientation:interfaceOrientation];
-
-        return YES;
-
-    }
-
-    return NO;
-
-}
-
-- (BOOL)interstitialCreateBottomToolbarBottomToolbar:(DTXMLElement*)xml {
-    DTXMLElement *bottomBarElement = [xml getNamedChild:@"bottombar"];
-
-    NSMutableDictionary *bottomBarElementAttributes = bottomBarElement.attributes;
-
-    BOOL bottomBarShow = [[bottomBarElementAttributes objectForKey:@"show"] isEqualToString:@"1"];
-
-    if(bottomBarShow) {
-
-        self.interstitialBottomToolbar = [[MobFoxToolBar alloc] initWithFrame:CGRectZero];
-
-        self.interstitialBottomToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | 
-        UIViewAutoresizingFlexibleTopMargin |
-        UIViewAutoresizingFlexibleRightMargin |
-        UIViewAutoresizingFlexibleLeftMargin;
-
-        self.interstitialBottomToolbar.barStyle = UIBarStyleBlack;
-        self.interstitialTopToolbar.translucent = NO;
-
-        NSString *bottomBarCustomBackgroundURL = [bottomBarElementAttributes objectForKey:@"custombackgroundurl"];
-
-        if (![bottomBarCustomBackgroundURL isEqualToString:@""]) {
-
-            NSURL *imageURL = [NSURL URLWithString:bottomBarCustomBackgroundURL];
-            UIImage *theImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:imageURL]];
-
-            if(theImage) {
-                self.interstitialBottomToolbar.backgroundImage = theImage;
-            } else {
-                self.interstitialBottomToolbar.backgroundImage = [UIImage mobfoxToolBarImage];
-            }
-        } else {
-            self.interstitialBottomToolbar.backgroundImage = [UIImage mobfoxToolBarImage];
-        }
-        UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];;
-        [self applyToolbarFrame:self.interstitialBottomToolbar bottomToolbar:YES orientation:interfaceOrientation];
-
-        UIBarButtonItem *flexiblespace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:
-                                          UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-
-        BOOL bottomBarBackbutton = [[bottomBarElementAttributes objectForKey:@"backbutton"] isEqualToString:@"1"];
-        if(bottomBarBackbutton) {
-            NSMutableArray *bottomBarItems = [NSMutableArray arrayWithArray:self.interstitialBottomToolbar.items];
-
-            self.browserBackButton=[UIButton buttonWithType:UIButtonTypeCustom];
-            [self.browserBackButton setFrame:CGRectMake(0, 0, buttonSize, buttonSize)];
-            [self.browserBackButton addTarget:self action:@selector(browserBackButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-            [self.browserBackButton setImage:[UIImage mobfoxBrowserBackButtonImage] forState:UIControlStateNormal];
-            [self.browserBackButton setImage:[UIImage mobfoxBrowserBackButtonDisabledImage] forState:UIControlStateDisabled];
-            [self.browserBackButton setImage:[UIImage mobfoxBrowserBackButtonDisabledImage] forState:UIControlStateHighlighted];
-            UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:self.browserBackButton];
-            [bottomBarItems addObject:theButton];
-            [bottomBarItems addObject:flexiblespace];
-            self.interstitialBottomToolbar.items = bottomBarItems;
-
-        }
-
-        BOOL bottomBarForwardbutton = [[bottomBarElementAttributes objectForKey:@"forwardbutton"] isEqualToString:@"1"];
-        if(bottomBarForwardbutton) {
-            NSMutableArray *bottomBarItems = [NSMutableArray arrayWithArray:self.interstitialBottomToolbar.items];
-
-            self.browserForwardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-            [self.browserForwardButton setFrame:CGRectMake(0, 0, buttonSize, buttonSize)];
-            [self.browserForwardButton addTarget:self action:@selector(browserForwardButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-            [self.browserForwardButton setImage:[UIImage mobfoxBrowserForwardButtonImage] forState:UIControlStateNormal];
-            [self.browserForwardButton setImage:[UIImage mobfoxBrowserForwardButtonDisabledImage] forState:UIControlStateDisabled];
-            [self.browserForwardButton setImage:[UIImage mobfoxBrowserForwardButtonDisabledImage] forState:UIControlStateHighlighted];
-
-            UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:self.browserForwardButton];
-            [bottomBarItems addObject:theButton];
-            [bottomBarItems addObject:flexiblespace];
-            self.interstitialBottomToolbar.items = bottomBarItems;
-
-        }
-
-        BOOL bottomBarReloadbutton = [[bottomBarElementAttributes objectForKey:@"reloadbutton"] isEqualToString:@"1"];
-        if(bottomBarReloadbutton) {
-            NSMutableArray *bottomBarItems = [NSMutableArray arrayWithArray:self.interstitialBottomToolbar.items];
-
-            UIButton *button=[UIButton buttonWithType:UIButtonTypeCustom];
-            [button setFrame:CGRectMake(0, 0, buttonSize, buttonSize)];
-            [button addTarget:self action:@selector(browserReloadButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-            [button setImage:[UIImage mobfoxReplayButtonImage] forState:UIControlStateNormal];
-            [button setImage:[UIImage mobfoxReplayButtonDisabledImage] forState:UIControlStateHighlighted];
-
-            UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:button];
-            [bottomBarItems addObject:theButton];
-            [bottomBarItems addObject:flexiblespace];
-            self.interstitialBottomToolbar.items = bottomBarItems;
-
-        }
-
-        if (interstitialLoadedFromURL) {
-
-            BOOL bottomBarExternalbutton = [[bottomBarElementAttributes objectForKey:@"externalbutton"] isEqualToString:@"1"];
-            if(bottomBarExternalbutton) {
-                NSMutableArray *bottomBarItems = [NSMutableArray arrayWithArray:self.interstitialBottomToolbar.items];
-
-                UIButton *button=[UIButton buttonWithType:UIButtonTypeCustom];
-                [button setFrame:CGRectMake(0, 0, buttonSize, buttonSize)];
-                [button addTarget:self action:@selector(browserExternalButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-                [button setImage:[UIImage mobfoxExportButtonImage] forState:UIControlStateNormal];
-                [button setImage:[UIImage mobfoxExportButtonDisabledImage] forState:UIControlStateHighlighted];
-
-                UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:button];
-                [bottomBarItems addObject:theButton];
-                [bottomBarItems addObject:flexiblespace];
-                self.interstitialBottomToolbar.items = bottomBarItems;
-
-            }
-
-        }
-
-        interstitialTimerShow = NO;
-
-        if (!interstitialAutoCloseDisabled) {
-
-            interstitialTimerShow = [[bottomBarElementAttributes objectForKey:@"timer"] isEqualToString:@"1"];
-
-            if(interstitialTimerShow) {
-                NSMutableArray *bottomBarItems = [NSMutableArray arrayWithArray:self.interstitialBottomToolbar.items];
-
-                self.interstitialTimerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 60, 44)];
-                [self.interstitialTimerLabel setFont:[UIFont boldSystemFontOfSize:20]];
-                self.interstitialTimerLabel.backgroundColor = [UIColor clearColor];
-                self.interstitialTimerLabel.textColor = [UIColor whiteColor];
-                self.interstitialTimerLabel.shadowColor = [UIColor blackColor];
-                self.interstitialTimerLabel.shadowOffset = CGSizeMake(1.0,-1.0);
-
-                self.interstitialTimerLabel.textAlignment = UITextAlignmentRight;
-
-                UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:self.interstitialTimerLabel];
-
-                [bottomBarItems addObject:theButton];
-                self.interstitialBottomToolbar.items = bottomBarItems;
-
-            }
-
-        }
-
-        return YES;
-    }
-
-    return NO;
-}
-
-- (void)interstitialLoadWebPage {
-
-    if (interstitialLoadedFromURL) {
-
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:self.interstitialURL]];
-
-        [self.interstitialWebView loadRequest:request];
-
-    } else {
-        [self.interstitialWebView loadHTMLString:self.interstitialMarkup baseURL:nil];
-    }
-
+- (NSInteger)getTimeFromString:(NSString*)string {
+    
+    NSArray *components = [string componentsSeparatedByString:@":"];
+    
+    NSInteger hours   = [[components objectAtIndex:0] integerValue];
+    NSInteger minutes = [[components objectAtIndex:1] integerValue];
+    NSInteger seconds = [[components objectAtIndex:2] integerValue];
+    
+    return (hours * 60 * 60) + (minutes * 60) + seconds;
 }
 
 - (BOOL)videoCreateAdvert:(DTXMLElement*)videoElement {
-
-    NSString *adVideoDeliveryType;
-    NSString *adVideoDeliveryBitRate;
-    CGSize   adVideoDimensions;
-    NSString *adVideoURL;
-
-    BOOL     adVideoToolbarBarsShow;
-    BOOL     adVideoToolbarBarsAllowTap;
-
-    NSArray *videoTrackingEvents;
-
-    NSString *adVideoHTMLOverlayType;
-    DTXMLElement *creativeElement = [videoElement getNamedChild:@"creative"];
-
-    NSMutableDictionary *creativeElementAttributes = creativeElement.attributes;
-    adVideoDeliveryType = [creativeElementAttributes objectForKey:@"delivery"];
-    adVideoDeliveryBitRate = [creativeElementAttributes objectForKey:@"bitrate"];
-
-    int adWith = [[creativeElementAttributes objectForKey:@"width"] intValue];
-    int adHeight = [[creativeElementAttributes objectForKey:@"height"] intValue];
-
-    adVideoDimensions = CGSizeMake(adWith, adHeight);
-
-    adVideoURL = creativeElement.text;
-
-    if (adVideoURL) {
+    vastAds = [VASTXMLParser parseVAST: videoElement];
+    videoSkipButtonDisplayed = NO;
+    
+    if(vastAds)
+    {
+        VAST_Ad *vastAd;
+        VAST_Linear *linear;
+        VAST_MediaFile *mediaFile;
+        
+        for(VAST_Ad* ad in vastAds) {
+            if(ad.InLine) {
+                for(VAST_Creative* c in ad.InLine.creatives) {
+                    if(c.linear && c.linear.mediaFiles.count != 0)
+                    {
+                        vastAd = ad;
+                        linear = c.linear;
+                        mediaFile = [c.linear.mediaFiles objectAtIndex:0];
+                        break;
+                    }
+                }
+            }
+            if(mediaFile) break;
+        }
+        
+        if(!mediaFile)
+        {
+            return NO;
+        }
+        
+        NSString *adVideoURL = mediaFile.url;
+        
+        NSMutableArray *videoTrackingEvents = [NSMutableArray arrayWithArray: linear.trackingEvents];
+        if(!adVideoURL)
+        {
+            return NO;
+        }
         [self advertAddNotificationObservers:MobFoxAdGroupVideo];
-
         videoCheckLoadedCount = 0;
         videoVideoFailedToLoad = NO;
-        self.mobFoxVideoPlayerViewController = [[MobFoxVideoPlayerViewController alloc] init]; 
+
+        self.mobFoxVideoPlayerViewController = [[MobFoxVideoPlayerViewController alloc] init];
         self.mobFoxVideoPlayerViewController.adVideoOrientation = adVideoOrientation;
         self.mobFoxVideoPlayerViewController.view.backgroundColor = [UIColor clearColor];
-
+        
         self.videoPlayer = [[MPMoviePlayerController alloc] initWithContentURL:[NSURL URLWithString:adVideoURL]];
-
+        
         [self.videoPlayer prepareToPlay];
-
+        
         self.videoPlayer.view.backgroundColor = [UIColor blackColor];
         self.videoPlayer.view.frame = self.view.bounds;
         self.videoPlayer.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.mobFoxVideoPlayerViewController.view.frame = self.view.bounds;
         self.mobFoxVideoPlayerViewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
-        self.videoPlayer.shouldAutoplay = NO;
-
+        
         self.videoPlayer.controlStyle = MPMovieControlStyleNone;
-
-        videoDuration = [[videoElement getNamedChild:@"duration"].text intValue];
-
+        self.videoPlayer.shouldAutoplay = NO;
+        
+        videoDuration = [self getTimeFromString:linear.duration];
+        
         if (videoVideoFailedToLoad) {
             return NO;
         }
-        DTXMLElement *navigationBarsElement = [videoElement getNamedChild:@"navigation"];
-
-        adVideoToolbarBarsShow = [[navigationBarsElement.attributes objectForKey:@"show"] isEqualToString:@"1"];
-
-        if(adVideoToolbarBarsShow) {
-            [self videoCreateTopToolbar:navigationBarsElement];
-            [self videoCreateBottomToolbar:navigationBarsElement];
-
-            adVideoToolbarBarsAllowTap = [[navigationBarsElement.attributes objectForKey:@"allowtap"] isEqualToString:@"1"];
-
-            if (adVideoToolbarBarsAllowTap && (self.videoTopToolbar || self.videoBottomToolbar)) {
-
-                UIView *coveringView = [[UIView alloc] initWithFrame:self.videoPlayer.view.bounds];
-
-                UITapGestureRecognizer *singleTap =  [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
-                singleTap.delegate = self;
-
-                [coveringView addGestureRecognizer:singleTap];
-
-                coveringView.backgroundColor = [UIColor clearColor];
-
-                coveringView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
-                [self.videoPlayer.view addSubview:coveringView];
-
+        
+        videoSkipButtonShow = YES;
+        
+        if(videoSkipButtonShow) {
+            if(linear.skipoffset) {
+                videoSkipButtonDisplayDelay = (NSTimeInterval)[self getTimeFromString:linear.skipoffset];
+            } else {
+                videoSkipButtonDisplayDelay = 0;
             }
-
-            if (self.videoTopToolbar) {
-                [self.videoPlayer.view addSubview:self.videoTopToolbar];
-            }
-
-            if (self.videoBottomToolbar) {
-                [self.videoPlayer.view addSubview:self.videoBottomToolbar];
-            }
-
-        }
-
-        if (videoVideoFailedToLoad) {
-            return NO;
-        }
-        NSMutableDictionary *skipButtonElementAttributes = [videoElement getNamedChild:@"skipbutton"].attributes;
-        videoSkipButtonShow = [[skipButtonElementAttributes objectForKey:@"show"] isEqualToString:@"1"];
-
-        if(videoSkipButtonShow || !adVideoToolbarBarsShow) {
-
-            videoSkipButtonDisplayDelay = (NSTimeInterval)[[skipButtonElementAttributes objectForKey:@"showafter"] doubleValue];
-            UIImage *buttonImage = [UIImage imageNamed:@""];
-            UIImage *buttonDisabledImage = [UIImage imageNamed:@""];
-
-            NSString *adSkipButtonGraphicURL = [skipButtonElementAttributes objectForKey:@"graphic"];
-
-            if (![adSkipButtonGraphicURL isEqualToString:@""]) {
-
-                NSURL *imageURL = [NSURL URLWithString:adSkipButtonGraphicURL];
-                buttonImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:imageURL]];
-                buttonDisabledImage = buttonImage;
-            }
-            if (!buttonImage) {
-                buttonImage = [UIImage mobfoxSkipButtonImage];
-                buttonDisabledImage = [UIImage mobfoxSkipButtonDisabledImage];
-            }
-
+            UIImage *buttonImage;
+            UIImage *buttonDisabledImage;
+            
+            buttonImage = [UIImage mobfoxSkipButtonImage];
+            buttonDisabledImage = [UIImage mobfoxSkipButtonDisabledImage];
+            
             if (buttonImage) {
                 float skipButtonSize = buttonSize + 4.0f;
-
+                
                 self.videoSkipButton = [UIButton buttonWithType:UIButtonTypeCustom];
                 [self.videoSkipButton setFrame:CGRectMake(0, 0, skipButtonSize, skipButtonSize)];
                 [self.videoSkipButton addTarget:self action:@selector(videoSkipAction:) forControlEvents:UIControlEventTouchUpInside];
                 [self.videoSkipButton setImage:buttonImage forState:UIControlStateNormal];
                 [self.videoSkipButton setImage:buttonDisabledImage forState:UIControlStateHighlighted];
-
-                if (self.videoTopToolbar) {
-
-                    UIBarButtonItem *flexiblespace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:
-                                                      UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-
-                    UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:self.videoSkipButton];
-                    self.videoTopToolbarButtons = [NSMutableArray arrayWithArray:self.videoTopToolbar.items];
-                    [self.videoTopToolbarButtons addObject:flexiblespace];
-                    [self.videoTopToolbarButtons addObject:theButton];
-
-                } else {
-
-                    self.videoSkipButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
-
-                }
+                
+                self.videoSkipButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
+                
             }
-
+            
         }
-
+        
         if (videoVideoFailedToLoad) {
             return NO;
         }
-        DTXMLElement *trackingEventsElement = [videoElement getNamedChild:@"trackingevents"];
-        videoTrackingEvents = [trackingEventsElement getNamedChildren:@"tracker"];
-
-        if ([videoTrackingEvents count]) {
-
-            self.advertTrackingEvents = [NSMutableArray arrayWithCapacity:0];
-
-            for (DTXMLElement *tracker in videoTrackingEvents)
+        
+ 
+        
+        VAST_NonLinear *nonLinear;
+        for (VAST_Creative *creative in vastAd.InLine.creatives)
+        {
+            for (VAST_NonLinear *nonL in creative.nonLinearAds.nonLinears)
             {
-
-                NSMutableDictionary *trackerAttributes = tracker.attributes;
-
-                NSString *type = [trackerAttributes objectForKey:@"type"];
-                NSString *clickUrl = tracker.text;
-
+                if (nonL)
+                {
+                    nonLinear = nonL;
+                    [videoTrackingEvents addObjectsFromArray:creative.nonLinearAds.trackingEvents];
+                    HTMLOverlayHeight = nonLinear.height;
+                    HTMLOverlayWidth = nonLinear.width;
+                    break;
+                }
+            }
+            if(nonLinear)
+                break;
+        }
+        
+        
+        self.videoAdvertTrackingEvents = [NSMutableArray arrayWithCapacity:0];
+        
+        if ([videoTrackingEvents count]) {
+            
+            for (VAST_Tracking *tracking in videoTrackingEvents)
+            {
+                
+                NSString *type = tracking.event;
+                NSString *clickUrl = tracking.url;
+                
                 if (clickUrl && type) {
                     NSDictionary *trackingEvent = [NSDictionary dictionaryWithObjectsAndKeys:
-                                                   clickUrl, type, 
+                                                   clickUrl, type,
                                                    nil];
-
-                    [self.advertTrackingEvents addObject:trackingEvent];
+                    
+                    [self.videoAdvertTrackingEvents addObject:trackingEvent];
                 }
-
+                
             }
+        }
+        
+        if (nonLinear.nonLinearClickTracking) {
+               NSDictionary *trackingEvent = [NSDictionary dictionaryWithObjectsAndKeys:
+                                              nonLinear.nonLinearClickTracking, @"overlayClick",
+                                              nil];
+                
+               [self.videoAdvertTrackingEvents addObject:trackingEvent];
+        }
+        for (NSString* click in linear.videoClicks.clickTracking) {
+              NSDictionary *trackingEvent = [NSDictionary dictionaryWithObjectsAndKeys:
+                                             click, @"videoClick",
+                                             nil];
+                
+             [self.videoAdvertTrackingEvents addObject:trackingEvent];
+        }
+            
+        for (VAST_Impression* impression in  vastAd.InLine.impressions) {
+              NSDictionary *trackingEvent = [NSDictionary dictionaryWithObjectsAndKeys:
+                                             impression.url, @"Impression",
+                                             nil];
+                
+             [self.videoAdvertTrackingEvents addObject:trackingEvent];
+        }
+            
+        
+        
+        
+        videoHTMLOverlayDisplayDelay = (NSTimeInterval)0;
+        
+        if(nonLinear.staticResource)
+        {
+            NSString *resource;
+            NSString *type = nonLinear.staticResource.type;
+            if([type isEqualToString:@"image/gif"] || [type isEqualToString:@"image/jpeg"] || [type isEqualToString:@"image/png"])
+            {
+                resource = [NSString stringWithFormat:@"<body style=\"margin: 0px; padding: 0px; text-align:center; width:100%%; height:100%%\"><img src=\"%@\"></body>", nonLinear.staticResource.url];
+                
+                self.videoHTMLOverlayHTML = resource;
+            }
+            else if([type isEqualToString:@"application/x-javascript"])
+            {
+                resource = [NSString stringWithFormat:@"<script src=\"%@\"></script>", nonLinear.staticResource.url];
+                self.videoHTMLOverlayHTML = resource;
+            }
+        }
+        else if(nonLinear.iFrameResource)
+        {
+            NSString *resource = [NSString stringWithFormat:@"<iframe src=\"%@\"></iframe>", nonLinear.iFrameResource];
+            self.videoHTMLOverlayHTML = resource;
+        }
+        else if(nonLinear.htmlResource)
+        {
+            self.videoHTMLOverlayHTML = nonLinear.htmlResource;
+        }
+        if(nonLinear.nonLinearClickThrough) {
+            _overlayClickThrough = [nonLinear.nonLinearClickThrough stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        }
+        
+        if (linear.videoClicks.clickThrough)
+        {
+            UIView *coveringView = [[UIView alloc] initWithFrame:self.videoPlayer.view.bounds];
+            _videoClickThrough = [linear.videoClicks.clickThrough stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+            
+            UITapGestureRecognizer *singleTap =  [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleVideoClick:)];
+            singleTap.delegate = self;
+            
+            [coveringView addGestureRecognizer:singleTap];
+            
+            coveringView.backgroundColor = [UIColor clearColor];
+            
+            coveringView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+            
+            [self.videoPlayer.view addSubview:coveringView];
 
         }
-
-        DTXMLElement *htmloverlayElement = [videoElement getNamedChild:@"htmloverlay"];
-        NSMutableDictionary *htmloverlayElementAttributes = htmloverlayElement.attributes;
-
-        videoHTMLOverlayDisplayDelay = (NSTimeInterval)[[htmloverlayElementAttributes objectForKey:@"showafter"] doubleValue];
-        adVideoHTMLOverlayType = [htmloverlayElementAttributes objectForKey:@"type"];
-
-        if([adVideoHTMLOverlayType isEqualToString:@"url"]) {
-            NSString *adVideoHTMLOverlayShowURL = [htmloverlayElementAttributes objectForKey:@"url"];
-
-            NSError* error = nil;
-            self.videoHTMLOverlayHTML = [NSString stringWithContentsOfURL:[NSURL URLWithString:adVideoHTMLOverlayShowURL] encoding:NSUTF8StringEncoding error:&error];
-
-        } else {
-
-            self.videoHTMLOverlayHTML = htmloverlayElement.text;
-
-        }
-
+        
+        
         if (videoVideoFailedToLoad) {
             return NO;
         }
-
+        
         return YES;
-
     }
-    return NO;
-}
-
-- (BOOL)videoCreateTopToolbar:(DTXMLElement*)xml {
-
-    NSMutableDictionary *topBarElementAttributes = [xml getNamedChild:@"topbar"].attributes;
-
-    BOOL topBarShow = [[topBarElementAttributes objectForKey:@"show"] isEqualToString:@"1"];
-
-    if (topBarShow) {
-        self.videoTopToolbar = [[MobFoxToolBar alloc] initWithFrame:CGRectZero];
-        self.videoTopToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-
-        self.videoTopToolbar.barStyle = UIBarStyleBlack;
-        self.videoTopToolbar.translucent = YES;
-
-        NSString *topBarCustomBackgroundURL = [topBarElementAttributes objectForKey:@"custombackgroundurl"];
-
-        if (![topBarCustomBackgroundURL isEqualToString:@""]) {
-
-            NSURL *imageURL = [NSURL URLWithString:topBarCustomBackgroundURL];
-            UIImage *theImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:imageURL]];
-            if(theImage)
-            {
-                self.videoTopToolbar.backgroundImage = theImage;
-
-            }  else {
-                self.videoTopToolbar.backgroundImage = [UIImage mobfoxToolBarImage];
-            }
-
-        }  else {
-            self.videoTopToolbar.backgroundImage = [UIImage mobfoxToolBarImage];
-        }
-
-        UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];;
-        [self applyToolbarFrame:self.videoTopToolbar bottomToolbar:NO orientation:interfaceOrientation];
-
-        return YES;
-
+    else
+    {
+        return NO;
     }
-
-    return NO;
-
-}
-
-- (BOOL)videoCreateBottomToolbar:(DTXMLElement*)xml {
-
-    DTXMLElement *bottomBarElement = [xml getNamedChild:@"bottombar"];
-
-    NSMutableDictionary *bottomBarElementAttributes = bottomBarElement.attributes;
-
-    BOOL bottomBarShow = [[bottomBarElementAttributes objectForKey:@"show"] isEqualToString:@"1"];
-
-    if(bottomBarShow) {
-
-        self.videoBottomToolbar = [[MobFoxToolBar alloc] initWithFrame:CGRectZero];
-
-        self.videoBottomToolbar.autoresizingMask =  UIViewAutoresizingFlexibleWidth | 
-        UIViewAutoresizingFlexibleTopMargin |
-        UIViewAutoresizingFlexibleRightMargin |
-        UIViewAutoresizingFlexibleLeftMargin;
-
-        self.videoBottomToolbar.barStyle = UIBarStyleBlack;
-        self.videoBottomToolbar.translucent = YES;
-
-        NSString *bottomBarCustomBackgroundURL = [bottomBarElementAttributes objectForKey:@"custombackgroundurl"];
-
-        if (![bottomBarCustomBackgroundURL isEqualToString:@""]) {
-
-            NSURL *imageURL = [NSURL URLWithString:bottomBarCustomBackgroundURL];
-            UIImage *theImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:imageURL]];
-
-            if(theImage)
-            {
-                self.videoBottomToolbar.backgroundImage = theImage;
-            } else {
-                self.videoBottomToolbar.backgroundImage = [UIImage mobfoxToolBarImage];
-            }
-
-        } else {
-            self.videoBottomToolbar.backgroundImage = [UIImage mobfoxToolBarImage];
-        }
-        UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];;
-        [self applyToolbarFrame:self.videoBottomToolbar bottomToolbar:YES orientation:interfaceOrientation];
-
-        BOOL bottomBarReplayButtonShow = [[bottomBarElementAttributes objectForKey:@"replaybutton"] isEqualToString:@"1"];
-        if(bottomBarReplayButtonShow) {
-            NSMutableArray *bottomBarItems = [NSMutableArray arrayWithArray:self.videoBottomToolbar.items];
-            UIImage *buttonImage = [UIImage imageNamed:@""];
-            UIImage *buttonDisabledImage = [UIImage imageNamed:@""];
-
-            NSString *bottomBarReplayButtonURL = [bottomBarElementAttributes objectForKey:@"replaybuttonurl"];
-            if (![bottomBarReplayButtonURL isEqualToString:@""]) {
-
-                NSURL *imageURL = [NSURL URLWithString:bottomBarReplayButtonURL];
-                buttonImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:imageURL]];
-                buttonDisabledImage = buttonImage;
-            }
-
-            if (!buttonImage) {
-                buttonImage = [UIImage mobfoxReplayButtonImage];
-                buttonDisabledImage = [UIImage mobfoxReplayButtonDisabledImage];
-            }
-
-            if(buttonImage)
-            {
-                UIButton *button=[UIButton buttonWithType:UIButtonTypeCustom];
-                [button setFrame:CGRectMake(0, 0, buttonSize, buttonSize)];
-                [button addTarget:self action:@selector(videoReplayButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-                [button setImage:buttonImage forState:UIControlStateNormal];
-                [button setImage:buttonDisabledImage forState:UIControlStateHighlighted];
-
-                UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:button];
-                [bottomBarItems addObject:theButton];
-                self.videoBottomToolbar.items = bottomBarItems;
-            }
-
-        }
-
-        BOOL bottomBarPausePlayButtonShow = [[bottomBarElementAttributes objectForKey:@"pausebutton"] isEqualToString:@"1"];
-        if(bottomBarPausePlayButtonShow) {
-            NSMutableArray *bottomBarItems = [NSMutableArray arrayWithArray:self.videoBottomToolbar.items];
-
-            NSString *bottomBarPauseButtonURL = [bottomBarElementAttributes objectForKey:@"pausebuttonurl"];
-            UIImage *pauseButtonImage = [UIImage imageNamed:@""];
-            UIImage *pauseButtonDisabledImage = [UIImage imageNamed:@""];
-
-            if (![bottomBarPauseButtonURL isEqualToString:@""]) {
-
-                NSURL *imageURL;
-
-                imageURL = [NSURL URLWithString:bottomBarPauseButtonURL];
-                pauseButtonImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:imageURL]];
-                pauseButtonDisabledImage = pauseButtonImage;
-            }
-            if (!pauseButtonImage) {
-                pauseButtonImage = [UIImage mobfoxPauseButtonImage];
-                pauseButtonDisabledImage = [UIImage mobfoxPauseButtonDisabledImage];
-            }
-
-            self.videoPauseButtonImage = pauseButtonImage;
-            self.videoPauseButtonDisabledImage = pauseButtonDisabledImage;
-
-            NSString *bottomBarPlayButtonURL = [bottomBarElementAttributes objectForKey:@"playbuttonurl"];
-            UIImage *playButtonImage = [UIImage imageNamed:@""];
-            UIImage *playButtonDisabledImage = [UIImage imageNamed:@""];
-
-            if (![bottomBarPlayButtonURL isEqualToString:@""]) {
-
-                NSURL *imageURL;
-
-                imageURL = [NSURL URLWithString:bottomBarPlayButtonURL];
-                playButtonImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:imageURL]];
-                playButtonDisabledImage = playButtonImage;
-            }
-            if (!playButtonImage) {
-                playButtonImage = [UIImage mobfoxPlayButtonImage];
-                playButtonDisabledImage = [UIImage mobfoxPlayButtonDisabledImage];
-
-            }
-            self.videoPlayButtonImage = playButtonImage;
-            self.videoPlayButtonDisabledImage = playButtonDisabledImage;
-
-            if(self.videoPlayButtonImage && self.videoPauseButtonImage)
-            {
-
-                UIButton *button=[UIButton buttonWithType:UIButtonTypeCustom];
-                [button setFrame:CGRectMake(0, 0, buttonSize, buttonSize)];
-                [button addTarget:self action:@selector(videoPausePlayButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-                [button setImage:pauseButtonImage forState:UIControlStateNormal];
-                [button setImage:pauseButtonDisabledImage forState:UIControlStateHighlighted];
-
-                UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:button];
-
-                [bottomBarItems addObject:theButton];
-                self.videoBottomToolbar.items = bottomBarItems;
-
-            }
-
-        }
-
-        videoTimerShow = NO;
-
-        if (videoDuration != 0) {
-            videoTimerShow = [[bottomBarElementAttributes objectForKey:@"timer"] isEqualToString:@"1"];
-
-            if(videoTimerShow) {
-                NSMutableArray *bottomBarItems = [NSMutableArray arrayWithArray:self.videoBottomToolbar.items];
-
-                self.videoTimerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 60, 44)];
-                [self.videoTimerLabel setFont:[UIFont boldSystemFontOfSize:20]];
-                self.videoTimerLabel.backgroundColor = [UIColor clearColor];
-                self.videoTimerLabel.textColor = [UIColor whiteColor];
-                self.videoTimerLabel.shadowColor = [UIColor blackColor];
-                self.videoTimerLabel.shadowOffset = CGSizeMake(1.0,-1.0);
-                int minutes = floor(videoDuration/60);
-                int seconds = trunc(videoDuration - minutes * 60);
-                self.videoTimerLabel.text = [NSString stringWithFormat:@"%i:%.2d", minutes, seconds];
-
-                self.videoTimerLabel.textAlignment = UITextAlignmentRight;
-
-                UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:self.videoTimerLabel];
-
-                [bottomBarItems addObject:theButton];
-                self.videoBottomToolbar.items = bottomBarItems;
-
-            }
-
-        }
-
-        NSArray *navIcons = [bottomBarElement getNamedChildren:@"navicon"];
-
-        if ([navIcons count]) {
-            NSMutableArray *bottomBarItems = [NSMutableArray arrayWithArray:self.videoBottomToolbar.items];
-
-            UIBarButtonItem *flexiblespace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:
-                                              UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-            [bottomBarItems addObject:flexiblespace];
-
-            UIView *navIconsView = [[UIView alloc] initWithFrame:CGRectZero];
-            navIconsView.backgroundColor = [UIColor clearColor];
-
-            int offset = 0;
-            int offsetIncrement = buttonSize * 1.75;
-
-            for (DTXMLElement *navIcon in navIcons)
-            {
-
-                NSMutableDictionary *navIconAttributes = navIcon.attributes;
-
-                NSString *title = [navIconAttributes objectForKey:@"title"];
-
-                NSString *iconUrl = [navIconAttributes objectForKey:@"iconurl"];
-                NSString *openType = [navIconAttributes objectForKey:@"opentype"];
-                NSString *clickUrl = [navIconAttributes objectForKey:@"clickurl"];
-
-                if (iconUrl) {
-                    NSURL *imageURL = [NSURL URLWithString:iconUrl];
-                    UIImage *theImage = [[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:imageURL]];
-
-                    if(theImage) {
-
-                        UIButton *thebutton=[UIButton buttonWithType:UIButtonTypeCustom];
-                        [thebutton setFrame:CGRectMake(offset, 0, buttonSize, buttonSize)];
-                        [thebutton addTarget:self action:@selector(navIconAction:) forControlEvents:UIControlEventTouchUpInside];
-                        [thebutton setImage:theImage forState:UIControlStateNormal];
-
-                        if(title) {
-                            [thebutton setTitle:title forState:UIControlStateNormal];
-                        }
-
-                        NSDictionary *buttonDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-                                                          openType,@"openType",
-                                                          clickUrl,@"clickUrl", nil];
-
-                        thebutton.objectTag = buttonDictionary;
-
-                        [navIconsView addSubview:thebutton];
-                        offset += offsetIncrement;
-
-                    }
-
-                }
-
-            }
-
-            navIconsView.frame = CGRectMake(0, 0, offset - (offsetIncrement-buttonSize), buttonSize);
-
-            UIBarButtonItem *theButton = [[UIBarButtonItem alloc] initWithCustomView:navIconsView];
-            [bottomBarItems addObject:theButton];
-
-            self.videoBottomToolbar.items = bottomBarItems;
-        }
-
-        return YES;
-
-    }
-
-    return NO;
 
 }
 
@@ -1755,35 +1447,6 @@ static float animationDuration = 0.50;
     [self performSelectorOnMainThread:@selector(reportSuccess:) withObject:advertTypeNumber waitUntilDone:YES];
 }
 
-- (void)checkVideoToInterstitialVideoLoadedAndReadyToPlay:(NSTimer*)timer {
-
-    NSDictionary *dictionary = [timer userInfo];
-
-    DTXMLElement *interstitialElement = [dictionary objectForKey:@"interstitialElement"];
-    MobFoxAdType adType = [[dictionary objectForKey:@"adType"] intValue];
-    if (videoVideoFailedToLoad || videoCheckLoadedCount > 100) {
-        [self videoFailedToLoad];
-
-    } else {
-        if ([self.videoPlayer loadState] == MPMovieLoadStateUnknown) {
-            videoCheckLoadedCount++;
-
-            [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(checkVideoToInterstitialVideoLoadedAndReadyToPlay:) userInfo:dictionary repeats:NO];
-            return;
-        }
-
-        if ([self interstitialCreateAdvert:interstitialElement]) {
-            [self advertCreatedSuccessfully:adType];
-
-        } else {
-            [self advertCreationFailed];
-
-        }
-
-    }
-
-}
-
 - (void)checkVideoLoadedAndReadyToPlay {
     if (videoVideoFailedToLoad || videoCheckLoadedCount > 100) {
         [self videoFailedToLoad];
@@ -1795,8 +1458,11 @@ static float animationDuration = 0.50;
             [NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(checkVideoLoadedAndReadyToPlay) userInfo:nil repeats:NO];
             return;
         }
-
-        [self advertCreatedSuccessfully:MobFoxAdTypeVideo];
+        if(!_customEventFullscreen) {
+            [self advertCreatedSuccessfully:MobFoxAdTypeVideo];
+        } else {
+            self.advertLoaded = YES;
+        }
     }
 
 }
@@ -1806,18 +1472,84 @@ static float animationDuration = 0.50;
 
     videoWasSkipped = NO;
 
-    [self advertTidyUpAfterAnimationOut:MobFoxAdTypeVideo];
+    [self advertTidyUpAfterAd:MobFoxAdTypeVideo];
 
 }
 
+#pragma mark - CustomEventFullscreenDelegate methods
+- (void)customEventFullscreenDidLoadAd:(CustomEventFullscreen *)fullscreen
+{
+    [self advertCreatedSuccessfully:advertTypeCurrentlyPlaying];
+}
+
+- (void)customEventFullscreenDidFailToLoadAd
+{
+    [self loadCustomEvent];
+    if(_customEventFullscreen) {
+        return;
+    } else if(advertLoaded) {
+        [self advertCreatedSuccessfully:advertTypeCurrentlyPlaying];
+        return;
+    } else if (enableInterstitialAds && !alreadyRequestedInterstitial && !_customEventFullscreen) {
+        NSString *publisherId = [delegate publisherIdForMobFoxVideoInterstitialView:self];
+        [self performSelectorInBackground:@selector(asyncRequestAdWithPublisherId:) withObject:publisherId];
+    } else if (enableVideoAds && !alreadyRequestedVideo && !_customEventFullscreen) {
+        NSString *publisherId = [delegate publisherIdForMobFoxVideoInterstitialView:self];
+        [self performSelectorInBackground:@selector(asyncRequestVideoAdWithPublisherId:) withObject:publisherId];
+    } else {
+        [self advertCreationFailed];
+    }
+}
+
+- (void)customEventFullscreenWillAppear
+{
+    
+}
+
+- (void)customEventFullscreenWillClose
+{
+    if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewWillDismissScreen:)])
+	{
+		[delegate mobfoxVideoInterstitialViewWillDismissScreen:self];
+	}
+    [self advertTidyUpAfterAd:currentlyPlayingInterstitial];
+}
+
+- (void)customEventFullscreenWillLeaveApplication
+{
+    if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewWasClicked:)])
+    {
+        [delegate mobfoxVideoInterstitialViewWasClicked:self];
+    }
+
+    if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewActionWillLeaveApplication:)])
+    {
+        [delegate mobfoxVideoInterstitialViewActionWillLeaveApplication:self];
+    }
+}
+
 #pragma mark - Ad Presentation
+- (void)presentCustomEventFullscreen {
+    @try {
+        [_customEventFullscreen showFullscreenFromRootViewController:[self firstAvailableUIViewController]];
+    }
+    @catch (NSException *exception) {
+        _customEventFullscreen = nil;
+        [self advertTidyUpAfterAd:currentlyPlayingInterstitial];
+        [self advertCreationFailed];
+    }
+    
+}
+
 
 - (void)presentAd:(MobFoxAdType)advertType {
 
     switch (advertType) {
         case MobFoxAdTypeVideo:
-        case MobFoxAdTypeVideoToInterstitial:
-            if (self.videoPlayer.view) {
+            if(_customEventFullscreen) {
+                [self presentCustomEventFullscreen];
+            }
+            else if (self.videoPlayer.view) {
                 tempView = [[UIView alloc]initWithFrame:self.videoPlayer.view.frame];
                 tempView.backgroundColor = [UIColor blackColor];
                 [self.view addSubview:tempView];
@@ -1830,13 +1562,17 @@ static float animationDuration = 0.50;
 
                 [videoViewController presentModalViewController:self.mobFoxVideoPlayerViewController animated:NO];
 
-                [self advertAnimateIn:self.advertAnimation advertTypeLoaded:advertType viewToAnimate:self.mobFoxVideoPlayerViewController.view];
+                [self advertShow:advertType viewToShow:self.mobFoxVideoPlayerViewController.view];
 
-}
+            }
             break;
-        case MobFoxAdTypeInterstitial:
-        case MobFoxAdTypeInterstitialToVideo:
-            if (self.interstitialHoldingView) {
+        case MobFoxAdTypeMraid:
+        case MobFoxAdTypeImage:
+        case MobFoxAdTypeText:
+            if(_customEventFullscreen) {
+                [self presentCustomEventFullscreen];
+            }
+            else if (self.interstitialHoldingView) {
 
                 [self.mobFoxInterstitialPlayerViewController.view addSubview:self.interstitialHoldingView];
 
@@ -1846,39 +1582,62 @@ static float animationDuration = 0.50;
 
                 [interstitialViewController presentModalViewController:self.mobFoxInterstitialPlayerViewController animated:NO];
 
-                [self advertAnimateIn:self.advertAnimation advertTypeLoaded:advertType viewToAnimate:self.mobFoxInterstitialPlayerViewController.view];
+                [self advertShow:advertType viewToShow:self.mobFoxInterstitialPlayerViewController.view];
 
             }
             break;
         case MobFoxAdTypeUnknown:
         case MobFoxAdTypeError:
+            break;
         case MobFoxAdTypeNoAdInventory:
+            if(_customEventFullscreen) {
+                [self presentCustomEventFullscreen];
+            }
             break;
     }
 
 }
 
-- (void)interstitialPlayAdvert {
-
-    [self interstitialStartTimer];
-    [self advertAddNotificationObservers:MobFoxAdGroupInterstitial];
-
-    currentlyPlayingInterstitial = YES;
-}
-
 - (void)interstitialStopAdvert {
-
     currentlyPlayingInterstitial = NO;
-
-    if (advertTypeCurrentlyPlaying == MobFoxAdTypeInterstitialToVideo) {
-
-        [self videoTidyUpAfterAnimationOut];
-
-    }
 
     [self advertRemoveNotificationObservers:MobFoxAdGroupInterstitial];
 
-    [self advertAnimateOut:self.advertAnimation advertTypeLoaded:MobFoxAdTypeInterstitial viewToAnimate:self.mobFoxInterstitialPlayerViewController.view];
+    if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewWillDismissScreen:)])
+	{
+		[delegate mobfoxVideoInterstitialViewWillDismissScreen:self];
+	}
+    
+    [self advertTidyUpAfterAd:advertTypeCurrentlyPlaying];
+    [interstitialViewController dismissModalViewControllerAnimated:NO];
+    [self interstitialTidyUpAfterAd];
+
+}
+
+- (void)interstitialTidyUpAfterAd {
+    
+    if (self.interstitialWebView) {
+        
+        [self interstitialStopTimer];
+        
+        [self.interstitialTopToolbar removeFromSuperview];
+        [self.interstitialBottomToolbar removeFromSuperview];
+        
+        self.interstitialTopToolbar = nil;
+        self.interstitialBottomToolbar = nil;
+        
+        self.interstitialSkipButton = nil;
+        
+        interstitialSkipButtonDisplayed = NO;
+        
+        self.interstitialWebView.delegate = nil;
+        [self.interstitialWebView removeFromSuperview];
+        self.interstitialWebView = nil;
+        
+        [self.interstitialHoldingView removeFromSuperview];
+        self.interstitialHoldingView = nil;
+        
+    }
 }
 
 - (void)videoPlayAdvert {
@@ -1893,6 +1652,8 @@ static float animationDuration = 0.50;
 
         [self videoStartTimer];
         [self advertActionTrackingEvent:@"start"];
+        [self advertActionTrackingEvent:@"Impression"];
+        [self advertActionTrackingEvent:@"creativeView"];
         [self.videoPlayer play];
 
     }
@@ -1901,58 +1662,15 @@ static float animationDuration = 0.50;
 
 - (void)videoStopAdvert {
     [self advertRemoveNotificationObservers:MobFoxAdGroupVideo];
-
-    if (advertTypeCurrentlyPlaying == MobFoxAdTypeInterstitialToVideo) {
-
-        if (self.interstitialHoldingView) {
-            [self.interstitialWebView reload];
-
-            [videoViewController dismissModalViewControllerAnimated:NO];
-            [self videoTidyUpAfterAnimationOut];
-            UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-            [self updateAllFrames:interfaceOrientation];
-
-            [self.mobFoxInterstitialPlayerViewController.view addSubview:self.interstitialHoldingView];
-
-            interstitialViewController = [self firstAvailableUIViewController];
-
-            interstitialViewController.wantsFullScreenLayout = YES;
-
-            [interstitialViewController presentModalViewController:self.mobFoxInterstitialPlayerViewController animated:NO];
-
-            [self advertAnimateIn:self.advertAnimation advertTypeLoaded:MobFoxAdTypeInterstitial viewToAnimate:self.mobFoxInterstitialPlayerViewController.view];
-        }
-
-        return;
-    }
-
-    if (advertTypeCurrentlyPlaying == MobFoxAdTypeVideoToInterstitial && !videoWasSkipped) {
-        if (self.interstitialHoldingView) {
-            [self.interstitialWebView reload];
-
-            [videoViewController dismissModalViewControllerAnimated:NO]; 
-            [self videoTidyUpAfterAnimationOut];
-            UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-            [self updateAllFrames:interfaceOrientation];
-
-            [self.mobFoxInterstitialPlayerViewController.view addSubview:self.interstitialHoldingView];
-
-            interstitialViewController = [self firstAvailableUIViewController];
-
-            interstitialViewController.wantsFullScreenLayout = YES;
-
-            [interstitialViewController presentModalViewController:self.mobFoxInterstitialPlayerViewController animated:NO];
-
-            [self advertAnimateIn:self.advertAnimation advertTypeLoaded:MobFoxAdTypeInterstitial viewToAnimate:self.mobFoxInterstitialPlayerViewController.view];
-        }
-
-        return;
-
-    }
-    if (advertTypeCurrentlyPlaying == MobFoxAdTypeVideoToInterstitial) {
-        [self interstitialTidyUpAfterAnimationOut];
-    }
-    [self advertAnimateOut:self.advertAnimation advertTypeLoaded:MobFoxAdTypeVideo viewToAnimate:self.mobFoxVideoPlayerViewController.view];
+    
+    if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewWillDismissScreen:)])
+	{
+		[delegate mobfoxVideoInterstitialViewWillDismissScreen:self];
+	}
+    
+    [self advertTidyUpAfterAd:advertTypeCurrentlyPlaying];
+    [videoViewController dismissModalViewControllerAnimated:NO];
+    [self videoTidyUpAfterAd];
 }
 
 - (void)playAdvert:(MobFoxAdType)advertType {
@@ -1960,15 +1678,13 @@ static float animationDuration = 0.50;
     if (!self.advertViewActionInProgress) {
         switch (advertType) {
             case MobFoxAdTypeVideo:
-            case MobFoxAdTypeVideoToInterstitial:
                 [self videoPlayAdvert];
-                break;
-            case MobFoxAdTypeInterstitial:
-            case MobFoxAdTypeInterstitialToVideo:
-                [self interstitialPlayAdvert];
                 break;
             case MobFoxAdTypeUnknown:
             case MobFoxAdTypeError:
+            case MobFoxAdTypeImage:
+            case MobFoxAdTypeText:
+            case MobFoxAdTypeMraid:
             case MobFoxAdTypeNoAdInventory:
                 break;
         }
@@ -1980,9 +1696,9 @@ static float animationDuration = 0.50;
 
 }
 
-#pragma mark - Ad Animation
+#pragma mark - Ad presentation
 
-- (void)advertAnimateIn:(NSString*)animationType advertTypeLoaded:(MobFoxAdType)advertType viewToAnimate:(UIView*)viewToAnimate {
+- (void)advertShow:(MobFoxAdType)advertType viewToShow:(UIView*)viewToShow {
     if (advertTypeCurrentlyPlaying == advertType) {
 
         if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewActionWillPresentScreen:)])
@@ -1997,252 +1713,14 @@ static float animationDuration = 0.50;
     UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];;
     [self updateAllFrames:interfaceOrientation];
 
-    if ([animationType isEqualToString:@"None"] || [animationType isEqualToString:@"none"] || [animationType isEqualToString:@""]) {
-        viewToAnimate.alpha = 1.0f;
-        viewToAnimate.hidden = NO;
-        [self playAdvert:advertType];
-    }
-
-    if ([animationType isEqualToString:@"fade-in"]) {
-        viewToAnimate.alpha = 0.0f;
-        viewToAnimate.hidden = NO;
-
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.alpha = 1.0;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self playAdvert:advertType]; 
-                             }
-                         }];
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-top"]) {
-        viewToAnimate.alpha = 1.0f;
-        viewToAnimate.hidden = NO;
-
-        CGRect startPosition = CGRectMake(0, 0 - viewToAnimate.frame.size.height, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        CGRect endPosition = CGRectMake(0, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        viewToAnimate.frame = startPosition;
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self playAdvert:advertType]; 
-                             }
-                         }];
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-bottom"]) {
-        viewToAnimate.alpha = 1.0f;
-        viewToAnimate.hidden = NO;
-
-        CGRect startPosition = CGRectMake(0, viewToAnimate.frame.size.height, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        CGRect endPosition = CGRectMake(0, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        viewToAnimate.frame = startPosition;
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self playAdvert:advertType]; 
-                             }
-                         }];
-
-    }
-
-    if ([animationType isEqualToString:@"slide-in-left"]) {
-        viewToAnimate.alpha = 1.0f;
-        viewToAnimate.hidden = NO;
-
-        CGRect startPosition = CGRectMake(0 - viewToAnimate.frame.size.width, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        CGRect endPosition = CGRectMake(0, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        viewToAnimate.frame = startPosition;
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self playAdvert:advertType]; 
-                             }
-                         }];
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-right"]) {
-        viewToAnimate.alpha = 1.0f;
-        viewToAnimate.hidden = NO;
-
-        CGRect startPosition = CGRectMake(viewToAnimate.frame.size.width, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        CGRect endPosition = CGRectMake(0, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        viewToAnimate.frame = startPosition;
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self playAdvert:advertType]; 
-                             }
-                         }];
-        return;
-    }
-
-    if ([animationType isEqualToString:@"flip-in"]) {
-
-        viewToAnimate.hidden = NO;
-        viewToAnimate.alpha = 1.0;
-
-        [UIView transitionFromView:viewToAnimate toView:viewToAnimate 
-                          duration:1.25 
-                           options:UIViewAnimationOptionTransitionFlipFromRight | UIViewAnimationOptionShowHideTransitionViews
-                        completion:^(BOOL finished) {
-                            if (finished) {
-                                [self playAdvert:advertType]; 
-                            }
-                        }];
-        return;
-    }
-
-}
-
-- (void)playInterstitialAfterVideoToInterstitial:(MobFoxAdType)advertType {
+    viewToShow.alpha = 1.0f;
+    viewToShow.hidden = NO;
     [self playAdvert:advertType];
-}
-
-- (void)videoToInterstitialAnimateSecondaryIn:(NSString*)animationType advertTypeLoaded:(MobFoxAdType)advertType viewToAnimate:(UIView*)viewToAnimate {
-
-    if ([animationType isEqualToString:@"None"] || [animationType isEqualToString:@"none"] || [animationType isEqualToString:@""]) {
-        viewToAnimate.alpha = 1.0f;
-        viewToAnimate.hidden = NO;
-        [self playInterstitialAfterVideoToInterstitial:advertType];
-    }
-
-    if ([animationType isEqualToString:@"fade-in"]) {
-        viewToAnimate.alpha = 0.0f;
-        viewToAnimate.hidden = NO;
-
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.alpha = 1.0;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self playInterstitialAfterVideoToInterstitial:advertType]; 
-                             }
-                         }];
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-top"]) {
-        viewToAnimate.alpha = 1.0f;
-        viewToAnimate.hidden = NO;
-
-        CGRect startPosition = CGRectMake(0, 0 - viewToAnimate.frame.size.height, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        CGRect endPosition = CGRectMake(0, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        viewToAnimate.frame = startPosition;
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self playInterstitialAfterVideoToInterstitial:advertType]; 
-                             }
-                         }];
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-bottom"]) {
-        viewToAnimate.alpha = 1.0f;
-        viewToAnimate.hidden = NO;
-
-        CGRect startPosition = CGRectMake(0, viewToAnimate.frame.size.height, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        CGRect endPosition = CGRectMake(0, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        viewToAnimate.frame = startPosition;
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self playInterstitialAfterVideoToInterstitial:advertType]; 
-                             }
-                         }];
-
-    }
-
-    if ([animationType isEqualToString:@"slide-in-left"]) {
-        viewToAnimate.alpha = 1.0f;
-        viewToAnimate.hidden = NO;
-
-        CGRect startPosition = CGRectMake(0 - viewToAnimate.frame.size.width, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        CGRect endPosition = CGRectMake(0, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        viewToAnimate.frame = startPosition;
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self playInterstitialAfterVideoToInterstitial:advertType]; 
-                             }
-                         }];
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-right"]) {
-        viewToAnimate.alpha = 1.0f;
-        viewToAnimate.hidden = NO;
-
-        CGRect startPosition = CGRectMake(viewToAnimate.frame.size.width, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        CGRect endPosition = CGRectMake(0, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        viewToAnimate.frame = startPosition;
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self playInterstitialAfterVideoToInterstitial:advertType]; 
-                             }
-                         }];
-        return;
-    }
-
-    if ([animationType isEqualToString:@"flip-in"]) {
-
-        viewToAnimate.hidden = NO;
-        viewToAnimate.alpha = 1.0;
-
-        [UIView transitionFromView:viewToAnimate toView:viewToAnimate 
-                          duration:1.25 
-                           options:UIViewAnimationOptionTransitionFlipFromRight | UIViewAnimationOptionShowHideTransitionViews
-                        completion:^(BOOL finished) {
-                            if (finished) {
-                                [self playInterstitialAfterVideoToInterstitial:advertType]; 
-                            }
-                        }];
-        return;
-    }
+    
 
 }
 
-- (void)interstitialTidyUpAfterAnimationOut {
-
-    if (self.interstitialWebView) {
-
-        [self interstitialStopTimer];
-
-        [self.interstitialTopToolbar removeFromSuperview];
-        [self.interstitialBottomToolbar removeFromSuperview];
-
-        self.interstitialTopToolbar = nil;
-        self.interstitialBottomToolbar = nil;
-
-        self.interstitialSkipButton = nil;
-
-        interstitialSkipButtonDisplayed = NO;
-
-        self.interstitialWebView.delegate = nil;
-        [self.interstitialWebView removeFromSuperview];
-        self.interstitialWebView = nil;
-
-        [self.interstitialHoldingView removeFromSuperview];
-        self.interstitialHoldingView = nil;
-
-    }
-
-}
-
-- (void)advertTidyUpAfterAnimationOut:(MobFoxAdType)advertType {
+- (void)advertTidyUpAfterAd:(MobFoxAdType)advertType {
 
     [self showStatusBarIfNecessary];
 
@@ -2251,13 +1729,9 @@ static float animationDuration = 0.50;
 
     if (advertType == MobFoxAdTypeVideo) {
         [videoViewController dismissModalViewControllerAnimated:NO]; 
-        [self videoTidyUpAfterAnimationOut];
+        [self videoTidyUpAfterAd];
     }
 
-    if (advertType == MobFoxAdTypeInterstitial) {
-        [interstitialViewController dismissModalViewControllerAnimated:NO];
-       [self interstitialTidyUpAfterAnimationOut];
-    }
     self.view.hidden = YES;
     self.view.alpha = 0.0;
 
@@ -2271,192 +1745,8 @@ static float animationDuration = 0.50;
 
 }
 
-- (void)advertAnimateOut:(NSString*)animationType advertTypeLoaded:(MobFoxAdType)advertType viewToAnimate:(UIView*)viewToAnimate {
 
-    if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewWillDismissScreen:)])
-	{
-		[delegate mobfoxVideoInterstitialViewWillDismissScreen:self];
-	}
-
-    if ([animationType isEqualToString:@"None"] || [animationType isEqualToString:@"none"] || [animationType isEqualToString:@""]) {
-        [self advertTidyUpAfterAnimationOut:advertType];
-    }
-
-    if ([animationType isEqualToString:@"fade-in"]) {
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.alpha = 0.0;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self advertTidyUpAfterAnimationOut:advertType];
-                             }
-                         }];
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-top"]) {
-
-        CGRect endPosition = CGRectMake(0, 0 - viewToAnimate.frame.size.height, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self advertTidyUpAfterAnimationOut:advertType]; 
-                             }
-                         }];
-
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-bottom"]) {
-
-        CGRect endPosition = CGRectMake(0, viewToAnimate.frame.size.height, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self advertTidyUpAfterAnimationOut:advertType]; 
-                             }
-                         }];
-
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-left"]) {
-
-        CGRect endPosition = CGRectMake(0 - viewToAnimate.frame.size.width, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self advertTidyUpAfterAnimationOut:advertType]; 
-                             }
-                         }];
-
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-right"]) {
-
-        CGRect endPosition = CGRectMake(viewToAnimate.frame.size.width, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self advertTidyUpAfterAnimationOut:advertType]; 
-                             }
-                         }];
-
-        return;
-    }
-
-    if ([animationType isEqualToString:@"flip-in"]) {
-        viewToAnimate.hidden = YES;
-        viewToAnimate.alpha = 0.0;
-
-        [UIView transitionFromView:viewToAnimate toView:viewToAnimate 
-                          duration:1.25 
-                           options:UIViewAnimationOptionTransitionFlipFromRight | UIViewAnimationOptionShowHideTransitionViews
-                        completion:^(BOOL finished) {
-                            if (finished) {
-                                [self advertTidyUpAfterAnimationOut:advertType]; 
-                            }
-                        }];
-        return;
-    }
-
-}
-
-- (void)interstitialToVideoAnimateSecondaryOut:(NSString*)animationType viewToAnimate:(UIView*)viewToAnimate {
-
-    if ([animationType isEqualToString:@"None"] || [animationType isEqualToString:@"none"] || [animationType isEqualToString:@""]) {
-        [self videoTidyUpAfterInterstitialToVideoAnimationOut];
-    }
-
-    if ([animationType isEqualToString:@"fade-in"]) {
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.alpha = 0.0;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self videoTidyUpAfterInterstitialToVideoAnimationOut];
-                             }
-                         }];
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-top"]) {
-
-        CGRect endPosition = CGRectMake(0, 0 - viewToAnimate.frame.size.height, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self videoTidyUpAfterInterstitialToVideoAnimationOut];
-                             }
-                         }];
-
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-bottom"]) {
-
-        CGRect endPosition = CGRectMake(0, viewToAnimate.frame.size.height, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self videoTidyUpAfterInterstitialToVideoAnimationOut];
-                             }
-                         }];
-
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-left"]) {
-
-        CGRect endPosition = CGRectMake(0 - viewToAnimate.frame.size.width, 0, viewToAnimate.frame.size.width, viewToAnimate.frame.size.height);
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self videoTidyUpAfterInterstitialToVideoAnimationOut];
-                             }
-                         }];
-
-        return;
-    }
-
-    if ([animationType isEqualToString:@"slide-in-right"]) {
-
-        CGRect endPosition = CGRectMake(self.videoPlayer.view.frame.size.width, 0, self.videoPlayer.view.frame.size.width, self.videoPlayer.view.frame.size.height);
-        [UIView animateWithDuration:animationDuration
-                         animations:^{viewToAnimate.frame = endPosition;}
-                         completion:^(BOOL finished) {
-                             if (finished) {
-                                 [self videoTidyUpAfterInterstitialToVideoAnimationOut];
-                             }
-                         }];
-
-        return;
-    }
-
-    if ([animationType isEqualToString:@"flip-in"]) {
-        viewToAnimate.hidden = YES;
-        viewToAnimate.alpha = 0.0;
-
-        [UIView transitionFromView:viewToAnimate toView:viewToAnimate 
-                          duration:1.25 
-                           options:UIViewAnimationOptionTransitionFlipFromRight | UIViewAnimationOptionShowHideTransitionViews
-                        completion:^(BOOL finished) {
-                            if (finished) {
-                                [self videoTidyUpAfterInterstitialToVideoAnimationOut];
-                            }
-                        }];
-        return;
-    }
-
-}
-
-- (void)videoTidyUpAfterAnimationOut {
+- (void)videoTidyUpAfterAd {
 
     if (self.videoPlayer) {
         if (self.videoPlayer.playbackState != MPMoviePlaybackStateStopped ) {
@@ -2486,24 +1776,6 @@ static float animationDuration = 0.50;
 
 }
 
-- (void)videoTidyUpAfterInterstitialToVideoAnimationOut {
-
-    [videoViewController dismissModalViewControllerAnimated:NO];
-    UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-
-    [self updateAllFrames:interfaceOrientation];
-
-    [self.interstitialWebView reload];
-
-    if (self.videoPlayer) {
-
-        [self videoStopTimer];
-
-        [self.videoPlayer.view removeFromSuperview];
-
-    }
-
-}
 
 #pragma mark - Request Status Reporting
 
@@ -2542,28 +1814,6 @@ static float animationDuration = 0.50;
         self.videoPlayer.view.frame = self.view.bounds;
     }
 
-    if (self.videoBottomToolbar.backgroundImage) {
-
-        [self applyToolbarFrame:self.videoBottomToolbar bottomToolbar:YES orientation:interfaceOrientation];
-    }
-
-    if (self.videoTopToolbar.backgroundImage) {
-
-        [self applyToolbarFrame:self.videoTopToolbar bottomToolbar:NO orientation:interfaceOrientation];
-
-    }
-
-    if (self.interstitialBottomToolbar.backgroundImage) {
-
-        [self applyToolbarFrame:self.interstitialBottomToolbar bottomToolbar:YES orientation:interfaceOrientation];
-    }
-
-    if (self.interstitialTopToolbar.backgroundImage) {
-
-        [self applyToolbarFrame:self.interstitialTopToolbar bottomToolbar:NO orientation:interfaceOrientation];
-
-    }
-
     if (self.videoHTMLOverlayWebView) {
         self.videoHTMLOverlayWebView.frame = [self returnVideoHTMLOverlayFrame];
     }
@@ -2580,31 +1830,12 @@ static float animationDuration = 0.50;
 
 - (void)applyFrameSize:(UIInterfaceOrientation)interfaceOrientation {
 
-    BOOL is5 = [[UIScreen mainScreen] bounds].size.height == 568.0f;
+    CGSize size = [UIScreen mainScreen].bounds.size;
 
     if (UIInterfaceOrientationIsPortrait(interfaceOrientation)) {
-
-        if (UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad) {
-            self.view.frame = CGRectMake(0, 0, 768, 1024);
-        } else {
-            if (is5) {
-                self.view.frame = CGRectMake(0, 0, 320, 568);
-            } else {
-                self.view.frame = CGRectMake(0, 0, 320, 480);
-            }
-        }
-
+        self.view.frame = CGRectMake(0, 0, size.width, size.height);
     } else {
-        if (UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad) {
-            self.view.frame = CGRectMake(0, 0, 1024, 768);
-        } else {
-            if (is5) {
-                self.view.frame = CGRectMake(0, 0, 568, 320);
-            } else {
-                self.view.frame = CGRectMake(0, 0, 480, 320);
-            }
-        }
-
+        self.view.frame = CGRectMake(0, 0, size.height, size.width);
     }
 
 }
@@ -2629,96 +1860,12 @@ static float animationDuration = 0.50;
 
 - (CGRect)returnVideoHTMLOverlayFrame {
 
-    float topToolbarHeight = 0.0f;
-    float bottomToolbarHeight = 0.0f;
+    CGRect webFrame = CGRectMake(0, self.view.bounds.size.height-HTMLOverlayHeight, HTMLOverlayWidth, HTMLOverlayHeight);
 
-    if (self.videoTopToolbar) {
-        topToolbarHeight = self.videoTopToolbar.frame.size.height;
-    }
-
-    if (self.videoBottomToolbar) {
-        bottomToolbarHeight = self.videoBottomToolbar.frame.size.height;
-    }
-
-    CGRect webFrame = CGRectMake(0, topToolbarHeight, self.view.bounds.size.width, self.view.bounds.size.height - bottomToolbarHeight - topToolbarHeight);
-
+    webFrame.origin.x = self.view.center.x - HTMLOverlayWidth/2;
     return webFrame;
 }
 
-- (void)applyToolbarFrame:(MobFoxToolBar*)theToolBar bottomToolbar:(BOOL)bottomToolbar orientation:(UIInterfaceOrientation)interfaceOrientation {
-    float height = 44.0f;
-    float width;
-
-    BOOL is5 = [[UIScreen mainScreen] bounds].size.height == 568.0f;
-
-    if (theToolBar) {
-        if (theToolBar.backgroundImage) {
-            if (UIInterfaceOrientationIsLandscape(interfaceOrientation)) {
-
-                if (UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad) {
-                    height = 122.0f;
-                    width = 1024.0f;
-                } else {
-                    height = 57.0f;
-
-                    if (is5) {
-                        width = 568.0f;
-                    } else {
-                        width = 480.0f;
-                    }
-                }
-
-            } else {
-
-                if (UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad) {
-                    height = 91.0f;
-                    width = 768.0f;
-                } else {
-                    height = 38.0f;
-                    width = 320.0f;
-                }
-
-            }
-
-        } else {
-
-            if (UIInterfaceOrientationIsLandscape(interfaceOrientation)) {
-
-                if (UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad) {
-                    width = 1024.0f;
-                } else {
-                    if (is5) {
-                        width = 568.0f;
-                    } else {
-                        width = 480.0f;
-                    }
-                }
-
-            } else {
-
-                if (UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPad) {
-                    width = 768.0f;
-                } else {
-                    width = 320.0f;
-                }
-
-            }
-
-        }
-
-        CGRect currentRect = theToolBar.frame;
-
-        currentRect.size.height = height;
-        currentRect.size.width = width;
-        if (bottomToolbar) {
-            currentRect.origin.y = self.view.frame.size.height - height;
-        } else {
-            currentRect.origin.y = 0;
-        }
-        theToolBar.frame = currentRect;
-
-    }
-}
 
 #pragma mark - Timers
 
@@ -2848,14 +1995,14 @@ static float animationDuration = 0.50;
     self.videoHTMLOverlayWebView.delegate = (id)self;
     self.videoHTMLOverlayWebView.dataDetectorTypes = UIDataDetectorTypeAll;
 
-    self.videoHTMLOverlayWebView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
+//    self.videoHTMLOverlayWebView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self removeUIWebViewBounce:self.videoHTMLOverlayWebView];
 
     [self.videoHTMLOverlayWebView loadHTMLString:self.videoHTMLOverlayHTML baseURL:nil];
     self.videoHTMLOverlayWebView.backgroundColor = [UIColor clearColor];
     self.videoHTMLOverlayWebView.opaque = NO;
-    UITapGestureRecognizer *touch = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)]; 
+    
+    UITapGestureRecognizer *touch = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleOverlayClick:)];
     touch.delegate = self;
     [self.videoHTMLOverlayWebView addGestureRecognizer:touch];
 
@@ -2889,19 +2036,19 @@ static float animationDuration = 0.50;
     int timeToCheckAgainst = (int)roundf(currentProgress);
     if (videoDuration != 0) {
         if (timeToCheckAgainst == videoDuration/2) {
-            [self advertActionTrackingEvent:@"Midpoint"];
+            [self advertActionTrackingEvent:@"midpoint"];
         }
 
-        int quartile = videoDuration/4;
+        NSInteger quartile = videoDuration/4;
         if (timeToCheckAgainst == quartile) {
-            [self advertActionTrackingEvent:@"firstquartile"];
+            [self advertActionTrackingEvent:@"firstQuartile"];
         }
         if (timeToCheckAgainst == (quartile*3)) {
-            [self advertActionTrackingEvent:@"thirdquartile"];
+            [self advertActionTrackingEvent:@"thirdQuartile"];
         }
     }
 
-    [self advertActionTrackingEvent:[NSString stringWithFormat:@"sec:%d", timeToCheckAgainst]];
+//    [self advertActionTrackingEvent:[NSString stringWithFormat:@"sec:%d", timeToCheckAgainst]];
 
     if(!videoSkipButtonDisplayed) {
         if(videoSkipButtonShow) {
@@ -2969,7 +2116,7 @@ static float animationDuration = 0.50;
 
 - (void)videoUnPause {
 
-    [self advertActionTrackingEvent:@"unpause"];
+    [self advertActionTrackingEvent:@"resume"];
 
     [self.videoPlayer play];
 
@@ -2986,7 +2133,7 @@ static float animationDuration = 0.50;
 	if (tapThroughLeavesApp || [tapThroughURL isDeviceSupported])
 	{
 
-        if ([delegate respondsToSelector:@selector(mobfoxBannerViewActionWillLeaveApplication:)])
+        if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewActionWillLeaveApplication:)])
         {
             [delegate mobfoxVideoInterstitialViewActionWillLeaveApplication:self];
         }
@@ -3024,6 +2171,8 @@ static float animationDuration = 0.50;
 	NSMutableURLRequest *request;
 
     request = [NSMutableURLRequest requestWithURL:url];
+    [request setHTTPMethod: @"GET"];
+    [request setValue:self.userAgent forHTTPHeaderField:@"User-Agent"];
 
     NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:nil];
     [connection start];
@@ -3031,9 +2180,10 @@ static float animationDuration = 0.50;
 }
 
 - (void)advertActionTrackingEvent:(NSString*)eventType {
-
+    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY @allKeys = %@", eventType];
-    NSArray *trackingEvents = [self.advertTrackingEvents filteredArrayUsingPredicate:predicate];
+
+    NSArray *trackingEvents = [self.videoAdvertTrackingEvents filteredArrayUsingPredicate:predicate];
 
     NSMutableArray *trackingEventsToRemove = [NSMutableArray arrayWithCapacity:0];
 
@@ -3041,6 +2191,7 @@ static float animationDuration = 0.50;
 	{
 
         NSString *urlString = [trackingEvent objectForKey:eventType];
+        urlString = [urlString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
         if (urlString) {
 
@@ -3054,41 +2205,13 @@ static float animationDuration = 0.50;
     if (![eventType isEqualToString:@"mute"] && ![eventType isEqualToString:@"unmute"] && ![eventType isEqualToString:@"pause"] && ![eventType isEqualToString:@"unpause"] && ![eventType isEqualToString:@"skip"] && ![eventType isEqualToString:@"replay"]) {
 
         if ([trackingEventsToRemove count]) {
-            [self.advertTrackingEvents removeObjectsInArray:trackingEventsToRemove]; 
+            [self.videoAdvertTrackingEvents removeObjectsInArray:trackingEventsToRemove];
         }
 
     }
 
 }
 
-- (void)toggleToolbars {
-
-    if (self.videoTopToolbar || self.videoBottomToolbar) {
-        BOOL toolbarsHidden;
-
-        if (self.videoTopToolbar) {
-            toolbarsHidden = self.videoTopToolbar.alpha == 0.00 ? YES : NO;
-        }
-
-        if (self.videoBottomToolbar) {
-            toolbarsHidden = self.videoBottomToolbar.alpha == 0.00 ? YES : NO;
-        }
-
-        float alphaToSet = toolbarsHidden ? 1.0 : 0.0;
-        if (!toolbarsHidden) {
-            [UIView beginAnimations:nil context:nil];
-            [UIView setAnimationDuration:0.25];
-            [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-        }
-
-        self.videoTopToolbar.alpha = alphaToSet;
-        self.videoBottomToolbar.alpha = alphaToSet;
-
-        if (!toolbarsHidden) {
-            [UIView commitAnimations];
-        }
-    }
-}
 
 #pragma mark Interstitial Interaction
 
@@ -3138,8 +2261,6 @@ static float animationDuration = 0.50;
 
 - (void)browserReloadButtonAction:(id)sender {
 
-    [self interstitialLoadWebPage];
-
     [self checkAndCancelAutoClose];
 
 }
@@ -3157,6 +2278,7 @@ static float animationDuration = 0.50;
     videoWasSkipped = YES;
 
     [self advertActionTrackingEvent:@"skip"];
+    [self advertActionTrackingEvent:@"close"];
 
     if (self.videoPlayer.playbackState != MPMoviePlaybackStateStopped ) {
         [self.videoPlayer stop];
@@ -3237,7 +2359,6 @@ static float animationDuration = 0.50;
 }
 
 - (void)interstitialSkipAction:(id)sender {
-
     [self interstitialStopAdvert];
 
 }
@@ -3321,7 +2442,9 @@ static float animationDuration = 0.50;
         switch (reasonForFinish) {
             case MPMovieFinishReasonPlaybackEnded:
             case MPMovieFinishReasonUserExited:
-                [self advertActionTrackingEvent:@"complete"];
+                if(!videoWasSkipped){
+                    [self advertActionTrackingEvent:@"complete"];
+                }
                 [self videoStopAdvert];
                 break;
         }
@@ -3356,16 +2479,12 @@ static float animationDuration = 0.50;
             if ([actionString isEqualToString:@"playvideo"] && self.videoPlayer) {
                 [self checkAndCancelAutoClose];
 
-                if (advertTypeCurrentlyPlaying == MobFoxAdTypeInterstitialToVideo) {
-                    [interstitialViewController dismissModalViewControllerAnimated:NO];
-                }
-
                [self.mobFoxVideoPlayerViewController.view addSubview:self.videoPlayer.view];
                videoViewController = [self firstAvailableUIViewController];
                videoViewController.wantsFullScreenLayout = YES;
 
                [videoViewController presentModalViewController:self.mobFoxVideoPlayerViewController animated:NO];
-               [self advertAnimateIn:self.advertAnimation advertTypeLoaded:MobFoxAdTypeVideo viewToAnimate:self.mobFoxVideoPlayerViewController.view];
+               [self advertShow:MobFoxAdTypeVideo viewToShow:self.mobFoxVideoPlayerViewController.view];
 
                 return NO;
             }
@@ -3478,41 +2597,67 @@ static float animationDuration = 0.50;
     return YES;
 }
 
-- (void)handleSingleTap:(UITapGestureRecognizer *)recognizer {
+
+- (void)handleOverlayClick:(UITapGestureRecognizer *)recognizer {
     if (recognizer.state == UIGestureRecognizerStateEnded)     {
-
-        if (self.videoPlayer) {
-            [self toggleToolbars];
-        }
-
+        
         [self checkAndCancelAutoClose];
-
+        if(_overlayClickThrough) {
+            if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewWasClicked:)])
+            {
+                [delegate mobfoxVideoInterstitialViewWasClicked:self];
+            }
+            [self advertActionTrackingEvent:@"overlayClick"];
+            NSString *escapedDataString = [_overlayClickThrough stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            NSURL *clickUrl = [NSURL URLWithString:escapedDataString];
+            [self tapThrough:YES tapThroughURL:clickUrl];
+        }
     }
 }
+
+
+- (void)handleVideoClick:(UITapGestureRecognizer *)recognizer {
+    if (recognizer.state == UIGestureRecognizerStateEnded)     {
+
+        if(_videoClickThrough) {
+            [self advertActionTrackingEvent:@"videoClick"];
+            if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewWasClicked:)])
+            {
+                [delegate mobfoxVideoInterstitialViewWasClicked:self];
+            }
+            NSString *escapedDataString = [_videoClickThrough stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            NSURL *clickUrl = [NSURL URLWithString:escapedDataString];
+            [self tapThrough:YES tapThroughURL:clickUrl];
+            
+            [self videoShowSkipButton];
+        }
+    }
+    
+}
+
 
 #pragma mark
 #pragma mark Status Bar Handling
 
 - (void)hideStatusBar
 {
-
-    if(self.mobFoxVideoPlayerViewController && !self.interstitialHoldingView) {
-        statusBarWasVisible = YES;
-        return;
-    }
-
-    if(self.mobFoxInterstitialPlayerViewController) {
-        statusBarWasVisible = YES;
-        return;
-    }
     UIApplication *app = [UIApplication sharedApplication];
+    if(!app.statusBarHidden) {
+        statusBarWasVisible = YES;
+    } else {
+        statusBarWasVisible = NO;
+    }
+    
+    if((self.mobFoxVideoPlayerViewController && !self.interstitialHoldingView) || self.mobFoxInterstitialPlayerViewController) {
+        return;
+    }
+    
 	if (!app.statusBarHidden)
 	{
 
         [app setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 		[app setStatusBarStyle:UIStatusBarStyleBlackOpaque animated:NO];
 
-		statusBarWasVisible = YES;
 
         CGRect frame = self.view.superview.frame;
         if([UIApplication sharedApplication].statusBarHidden ) {
@@ -3681,6 +2826,26 @@ static float animationDuration = 0.50;
 - (void)deviceOrientationDidChange:(NSNotification *)notification {
     UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];;
     [self updateAllFrames:interfaceOrientation];
+}
+
+#pragma mark Banner View Delegate
+
+-(void) mobfoxBannerViewActionWillPresent:(MobFoxBannerView *)banner {
+    if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewWasClicked:)])
+    {
+        [delegate mobfoxVideoInterstitialViewWasClicked:self];
+    }
+}
+
+-(void) mobfoxBannerViewActionWillLeaveApplication:(MobFoxBannerView *)banner {
+    if ([delegate respondsToSelector:@selector(mobfoxVideoInterstitialViewActionWillLeaveApplication:)])
+    {
+        [delegate mobfoxVideoInterstitialViewActionWillLeaveApplication:self];
+    }
+}
+
+-(NSString*) publisherIdForMobFoxBannerView:(MobFoxBannerView *)banner {
+    return [delegate publisherIdForMobFoxVideoInterstitialView:self];
 }
 
 @end

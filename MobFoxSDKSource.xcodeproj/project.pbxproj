@@ -175,7 +175,6 @@
 		90038EE81846019400446EAD /* MPInterstitialCustomEventDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 90038E671846019400446EAD /* MPInterstitialCustomEventDelegate.h */; };
 		90038EE91846019400446EAD /* MPCloseButtonX.png in Resources */ = {isa = PBXBuildFile; fileRef = 90038E691846019400446EAD /* MPCloseButtonX.png */; };
 		90038EEA1846019400446EAD /* MPCloseButtonX@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 90038E6A1846019400446EAD /* MPCloseButtonX@2x.png */; };
-		90038EEB1846019400446EAD /* MRAID.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 90038E6B1846019400446EAD /* MRAID.bundle */; };
 		90038F0D1846035D00446EAD /* CDataScanner.h in Headers */ = {isa = PBXBuildFile; fileRef = 90038EF31846035D00446EAD /* CDataScanner.h */; };
 		90038F0E1846035D00446EAD /* CDataScanner.h in Headers */ = {isa = PBXBuildFile; fileRef = 90038EF31846035D00446EAD /* CDataScanner.h */; };
 		90038F0F1846035D00446EAD /* CDataScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 90038EF41846035D00446EAD /* CDataScanner.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -226,6 +225,14 @@
 		9014FD34184DFDAD006746EC /* EventKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 905D81A8184CC1BF007AF71F /* EventKit.framework */; };
 		9014FD35184DFDAD006746EC /* EventKitUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 905D81A9184CC1BF007AF71F /* EventKitUI.framework */; };
 		9014FD36184DFDD2006746EC /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F6451531502309A00922DA3 /* CoreLocation.framework */; };
+		901FCEE9192C8E4900D22785 /* NativeAd.h in Headers */ = {isa = PBXBuildFile; fileRef = 901FCEE7192C8E4900D22785 /* NativeAd.h */; };
+		901FCEEA192C8E4900D22785 /* NativeAd.h in Headers */ = {isa = PBXBuildFile; fileRef = 901FCEE7192C8E4900D22785 /* NativeAd.h */; };
+		901FCEEB192C8E4900D22785 /* NativeAd.m in Sources */ = {isa = PBXBuildFile; fileRef = 901FCEE8192C8E4900D22785 /* NativeAd.m */; };
+		901FCEEC192C8E4900D22785 /* NativeAd.m in Sources */ = {isa = PBXBuildFile; fileRef = 901FCEE8192C8E4900D22785 /* NativeAd.m */; };
+		901FCEF2192C97EE00D22785 /* MobFoxNativeAdController.h in Headers */ = {isa = PBXBuildFile; fileRef = 901FCEF0192C97EE00D22785 /* MobFoxNativeAdController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		901FCEF3192C97EE00D22785 /* MobFoxNativeAdController.h in Headers */ = {isa = PBXBuildFile; fileRef = 901FCEF0192C97EE00D22785 /* MobFoxNativeAdController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		901FCEF4192C97EE00D22785 /* MobFoxNativeAdController.m in Sources */ = {isa = PBXBuildFile; fileRef = 901FCEF1192C97EE00D22785 /* MobFoxNativeAdController.m */; };
+		901FCEF5192C97EE00D22785 /* MobFoxNativeAdController.m in Sources */ = {isa = PBXBuildFile; fileRef = 901FCEF1192C97EE00D22785 /* MobFoxNativeAdController.m */; };
 		9020731F1859A6A4001A696C /* MPBannerCustomEventAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 90038DE81846019400446EAD /* MPBannerCustomEventAdapter.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		902073211859A6A4001A696C /* MPBaseBannerAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 90038DEA1846019400446EAD /* MPBaseBannerAdapter.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		902073231859A6A4001A696C /* MPLegacyBannerCustomEventAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 90038DEC1846019400446EAD /* MPLegacyBannerCustomEventAdapter.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -349,10 +356,82 @@
 		903603161859AE040020E5EE /* MPInterstitialAdController.h in Headers */ = {isa = PBXBuildFile; fileRef = 90038E631846019400446EAD /* MPInterstitialAdController.h */; };
 		903603171859AE040020E5EE /* MPInterstitialCustomEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 90038E651846019400446EAD /* MPInterstitialCustomEvent.h */; };
 		903603181859AE040020E5EE /* MPInterstitialCustomEventDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 90038E671846019400446EAD /* MPInterstitialCustomEventDelegate.h */; };
+		903ADEF918CDABA50001F0E4 /* CustomEventFullscreenDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 903ADEF818CDABA50001F0E4 /* CustomEventFullscreenDelegate.h */; };
+		903ADEFA18CDABA50001F0E4 /* CustomEventFullscreenDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 903ADEF818CDABA50001F0E4 /* CustomEventFullscreenDelegate.h */; };
+		903ADEFF18CDAE460001F0E4 /* CustomEventFullscreen.h in Headers */ = {isa = PBXBuildFile; fileRef = 903ADEFD18CDAE460001F0E4 /* CustomEventFullscreen.h */; };
+		903ADF0018CDAE460001F0E4 /* CustomEventFullscreen.h in Headers */ = {isa = PBXBuildFile; fileRef = 903ADEFD18CDAE460001F0E4 /* CustomEventFullscreen.h */; };
+		903ADF0118CDAE460001F0E4 /* CustomEventFullscreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 903ADEFE18CDAE460001F0E4 /* CustomEventFullscreen.m */; };
+		903ADF0218CDAE460001F0E4 /* CustomEventFullscreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 903ADEFE18CDAE460001F0E4 /* CustomEventFullscreen.m */; };
+		903ADF0718CDB4D20001F0E4 /* AdMobCustomEventFullscreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 903ADF0418CDB4D20001F0E4 /* AdMobCustomEventFullscreen.m */; };
+		903ADF0818CDB4D20001F0E4 /* AdMobCustomEventFullscreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 903ADF0418CDB4D20001F0E4 /* AdMobCustomEventFullscreen.m */; };
+		903ADF0B18CDFDAA0001F0E4 /* CustomEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 903ADF0918CDFDAA0001F0E4 /* CustomEvent.h */; };
+		903ADF0C18CDFDAA0001F0E4 /* CustomEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 903ADF0918CDFDAA0001F0E4 /* CustomEvent.h */; };
+		903ADF0D18CDFDAA0001F0E4 /* CustomEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 903ADF0A18CDFDAA0001F0E4 /* CustomEvent.m */; };
+		903ADF0E18CDFDAA0001F0E4 /* CustomEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 903ADF0A18CDFDAA0001F0E4 /* CustomEvent.m */; };
+		9078055F18D1C26E00427F7B /* iAdCustomEventBanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 9078055C18D1C26E00427F7B /* iAdCustomEventBanner.m */; };
+		9078056018D1C26E00427F7B /* iAdCustomEventBanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 9078055C18D1C26E00427F7B /* iAdCustomEventBanner.m */; };
+		909716CE18AA4DDF007EEB4D /* VASTXMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 909716CC18AA4DDF007EEB4D /* VASTXMLParser.h */; };
+		909716CF18AA4DDF007EEB4D /* VASTXMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 909716CC18AA4DDF007EEB4D /* VASTXMLParser.h */; };
+		909716D018AA4DDF007EEB4D /* VASTXMLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 909716CD18AA4DDF007EEB4D /* VASTXMLParser.m */; };
+		909716D118AA4DDF007EEB4D /* VASTXMLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 909716CD18AA4DDF007EEB4D /* VASTXMLParser.m */; };
+		909716D418AA5CF8007EEB4D /* VAST.h in Headers */ = {isa = PBXBuildFile; fileRef = 909716D218AA5CF8007EEB4D /* VAST.h */; };
+		909716D518AA5CF8007EEB4D /* VAST.h in Headers */ = {isa = PBXBuildFile; fileRef = 909716D218AA5CF8007EEB4D /* VAST.h */; };
+		909716D618AA5CF8007EEB4D /* VAST.m in Sources */ = {isa = PBXBuildFile; fileRef = 909716D318AA5CF8007EEB4D /* VAST.m */; };
+		909716D718AA5CF8007EEB4D /* VAST.m in Sources */ = {isa = PBXBuildFile; fileRef = 909716D318AA5CF8007EEB4D /* VAST.m */; };
+		90987CDC18BCA9CD00148D09 /* AdMobCustomEventBanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 90987CD918BCA9CD00148D09 /* AdMobCustomEventBanner.m */; };
+		90987CDD18BCA9CD00148D09 /* AdMobCustomEventBanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 90987CD918BCA9CD00148D09 /* AdMobCustomEventBanner.m */; };
+		90987CFF18BCB95600148D09 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90987CFE18BCB95600148D09 /* AudioToolbox.framework */; };
+		90987D0118BCB96400148D09 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90987D0018BCB96400148D09 /* AVFoundation.framework */; };
+		90987D0318BCB96E00148D09 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90987D0218BCB96E00148D09 /* CoreGraphics.framework */; };
+		90987D2318BCD1AB00148D09 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 90987D0E18BCD1AB00148D09 /* README.txt */; };
+		90987D3C18BCD32500148D09 /* CustomEventBannerDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 909A5E9718B60DC500C929A5 /* CustomEventBannerDelegate.h */; };
+		90987D3D18BCD32500148D09 /* CustomEventBanner.h in Headers */ = {isa = PBXBuildFile; fileRef = 909A5E9A18B6168500C929A5 /* CustomEventBanner.h */; };
+		90987D3E18BCD32600148D09 /* CustomEventBannerDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 909A5E9718B60DC500C929A5 /* CustomEventBannerDelegate.h */; };
+		90987D3F18BCD32600148D09 /* CustomEventBanner.h in Headers */ = {isa = PBXBuildFile; fileRef = 909A5E9A18B6168500C929A5 /* CustomEventBanner.h */; };
+		909A5E9D18B6168500C929A5 /* CustomEventBanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 909A5E9B18B6168500C929A5 /* CustomEventBanner.m */; };
+		909A5E9F18B6168B00C929A5 /* CustomEventBanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 909A5E9B18B6168500C929A5 /* CustomEventBanner.m */; };
 		909F363118487AB200080BD3 /* MobFoxMRAIDBannerAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 909F362F18487AB200080BD3 /* MobFoxMRAIDBannerAdapter.h */; };
 		909F363218487AB200080BD3 /* MobFoxMRAIDBannerAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 909F362F18487AB200080BD3 /* MobFoxMRAIDBannerAdapter.h */; };
 		909F363318487AB200080BD3 /* MobFoxMRAIDBannerAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 909F363018487AB200080BD3 /* MobFoxMRAIDBannerAdapter.m */; };
 		909F363418487AB200080BD3 /* MobFoxMRAIDBannerAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 909F363018487AB200080BD3 /* MobFoxMRAIDBannerAdapter.m */; };
+		909FE95519336C060014597C /* MobFoxNativeTrackingView.h in Headers */ = {isa = PBXBuildFile; fileRef = 909FE95319336C060014597C /* MobFoxNativeTrackingView.h */; };
+		909FE95619336C060014597C /* MobFoxNativeTrackingView.h in Headers */ = {isa = PBXBuildFile; fileRef = 909FE95319336C060014597C /* MobFoxNativeTrackingView.h */; };
+		909FE95719336C060014597C /* MobFoxNativeTrackingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 909FE95419336C060014597C /* MobFoxNativeTrackingView.m */; };
+		909FE95819336C060014597C /* MobFoxNativeTrackingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 909FE95419336C060014597C /* MobFoxNativeTrackingView.m */; };
+		90A0330E18D2E6A5001340B7 /* iAdCustomEventFullscreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 90A0330B18D2E6A5001340B7 /* iAdCustomEventFullscreen.m */; };
+		90A0330F18D2E6A5001340B7 /* iAdCustomEventFullscreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 90A0330B18D2E6A5001340B7 /* iAdCustomEventFullscreen.m */; };
+		90A3F7BF1935E02F00814208 /* MobFoxTableViewHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 90A3F7BD1935E02F00814208 /* MobFoxTableViewHelper.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		90A3F7C01935E02F00814208 /* MobFoxTableViewHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 90A3F7BD1935E02F00814208 /* MobFoxTableViewHelper.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		90A3F7C11935E02F00814208 /* MobFoxTableViewHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 90A3F7BE1935E02F00814208 /* MobFoxTableViewHelper.m */; };
+		90A3F7C21935E02F00814208 /* MobFoxTableViewHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 90A3F7BE1935E02F00814208 /* MobFoxTableViewHelper.m */; };
+		90A5C8C0192F677700978746 /* UIView+MobFox.h in Headers */ = {isa = PBXBuildFile; fileRef = 90A5C8BE192F677700978746 /* UIView+MobFox.h */; };
+		90A5C8C1192F677700978746 /* UIView+MobFox.h in Headers */ = {isa = PBXBuildFile; fileRef = 90A5C8BE192F677700978746 /* UIView+MobFox.h */; };
+		90A5C8C2192F677700978746 /* UIView+MobFox.m in Sources */ = {isa = PBXBuildFile; fileRef = 90A5C8BF192F677700978746 /* UIView+MobFox.m */; };
+		90A5C8C3192F677700978746 /* UIView+MobFox.m in Sources */ = {isa = PBXBuildFile; fileRef = 90A5C8BF192F677700978746 /* UIView+MobFox.m */; };
+		90AC3AD9193C70300021402D /* GADAdMobExtras.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3ACD193C702F0021402D /* GADAdMobExtras.h */; };
+		90AC3ADA193C70300021402D /* GADAdMobExtras.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3ACD193C702F0021402D /* GADAdMobExtras.h */; };
+		90AC3ADB193C70300021402D /* GADAdNetworkExtras.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3ACE193C702F0021402D /* GADAdNetworkExtras.h */; };
+		90AC3ADC193C70300021402D /* GADAdNetworkExtras.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3ACE193C702F0021402D /* GADAdNetworkExtras.h */; };
+		90AC3ADD193C70300021402D /* GADAdSize.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3ACF193C702F0021402D /* GADAdSize.h */; };
+		90AC3ADE193C70300021402D /* GADAdSize.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3ACF193C702F0021402D /* GADAdSize.h */; };
+		90AC3ADF193C70300021402D /* GADBannerView.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3AD0193C702F0021402D /* GADBannerView.h */; };
+		90AC3AE0193C70300021402D /* GADBannerView.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3AD0193C702F0021402D /* GADBannerView.h */; };
+		90AC3AE1193C70300021402D /* GADBannerViewDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3AD1193C70300021402D /* GADBannerViewDelegate.h */; };
+		90AC3AE2193C70300021402D /* GADBannerViewDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3AD1193C70300021402D /* GADBannerViewDelegate.h */; };
+		90AC3AE3193C70300021402D /* GADInAppPurchase.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3AD2193C70300021402D /* GADInAppPurchase.h */; };
+		90AC3AE4193C70300021402D /* GADInAppPurchase.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3AD2193C70300021402D /* GADInAppPurchase.h */; };
+		90AC3AE5193C70300021402D /* GADInAppPurchaseDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3AD3193C70300021402D /* GADInAppPurchaseDelegate.h */; };
+		90AC3AE6193C70300021402D /* GADInAppPurchaseDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3AD3193C70300021402D /* GADInAppPurchaseDelegate.h */; };
+		90AC3AEB193C70300021402D /* GADModules.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3AD6193C70300021402D /* GADModules.h */; };
+		90AC3AEC193C70300021402D /* GADModules.h in Headers */ = {isa = PBXBuildFile; fileRef = 90AC3AD6193C70300021402D /* GADModules.h */; };
+		90CCFB0718F829E400D73FEB /* GADInterstitial.h in Headers */ = {isa = PBXBuildFile; fileRef = 90987D0918BCD1AB00148D09 /* GADInterstitial.h */; };
+		90CCFB0818F829E400D73FEB /* GADInterstitialDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 90987D0A18BCD1AB00148D09 /* GADInterstitialDelegate.h */; };
+		90CCFB0918F829E400D73FEB /* GADRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 90987D0B18BCD1AB00148D09 /* GADRequest.h */; };
+		90CCFB0A18F829E400D73FEB /* GADRequestError.h in Headers */ = {isa = PBXBuildFile; fileRef = 90987D0C18BCD1AB00148D09 /* GADRequestError.h */; };
+		90CCFB1018F829E700D73FEB /* GADInterstitial.h in Headers */ = {isa = PBXBuildFile; fileRef = 90987D0918BCD1AB00148D09 /* GADInterstitial.h */; };
+		90CCFB1118F829E700D73FEB /* GADInterstitialDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 90987D0A18BCD1AB00148D09 /* GADInterstitialDelegate.h */; };
+		90CCFB1218F829E700D73FEB /* GADRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 90987D0B18BCD1AB00148D09 /* GADRequest.h */; };
+		90CCFB1318F829E700D73FEB /* GADRequestError.h in Headers */ = {isa = PBXBuildFile; fileRef = 90987D0C18BCD1AB00148D09 /* GADRequestError.h */; };
 		A7992E8F1489362800E86AC8 /* DTXMLDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = A7992E761489362800E86AC8 /* DTXMLDocument.h */; };
 		A7992E911489362800E86AC8 /* DTXMLDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = A7992E771489362800E86AC8 /* DTXMLDocument.m */; };
 		A7992E931489362800E86AC8 /* DTXMLElement.h in Headers */ = {isa = PBXBuildFile; fileRef = A7992E781489362800E86AC8 /* DTXMLElement.h */; };
@@ -566,12 +645,59 @@
 		90038F0B1846035D00446EAD /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		90038F0C1846035D00446EAD /* README.markdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.markdown; sourceTree = "<group>"; };
 		9014FD32184DFDA2006746EC /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		901FCEE7192C8E4900D22785 /* NativeAd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NativeAd.h; path = NativeAds/NativeAd.h; sourceTree = "<group>"; };
+		901FCEE8192C8E4900D22785 /* NativeAd.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NativeAd.m; path = NativeAds/NativeAd.m; sourceTree = "<group>"; };
+		901FCEF0192C97EE00D22785 /* MobFoxNativeAdController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobFoxNativeAdController.h; sourceTree = "<group>"; };
+		901FCEF1192C97EE00D22785 /* MobFoxNativeAdController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MobFoxNativeAdController.m; sourceTree = "<group>"; };
+		903ADEF818CDABA50001F0E4 /* CustomEventFullscreenDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomEventFullscreenDelegate.h; path = CustomEvents/CustomEventFullscreenDelegate.h; sourceTree = "<group>"; };
+		903ADEFD18CDAE460001F0E4 /* CustomEventFullscreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomEventFullscreen.h; path = CustomEvents/CustomEventFullscreen.h; sourceTree = "<group>"; };
+		903ADEFE18CDAE460001F0E4 /* CustomEventFullscreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CustomEventFullscreen.m; path = CustomEvents/CustomEventFullscreen.m; sourceTree = "<group>"; };
+		903ADF0318CDB4D20001F0E4 /* AdMobCustomEventFullscreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AdMobCustomEventFullscreen.h; path = CustomEvents/AdMob/AdMobCustomEventFullscreen.h; sourceTree = "<group>"; };
+		903ADF0418CDB4D20001F0E4 /* AdMobCustomEventFullscreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AdMobCustomEventFullscreen.m; path = CustomEvents/AdMob/AdMobCustomEventFullscreen.m; sourceTree = "<group>"; };
+		903ADF0918CDFDAA0001F0E4 /* CustomEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomEvent.h; sourceTree = "<group>"; };
+		903ADF0A18CDFDAA0001F0E4 /* CustomEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomEvent.m; sourceTree = "<group>"; };
 		905D81A4184CC1B1007AF71F /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		905D81A6184CC1B8007AF71F /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		905D81A8184CC1BF007AF71F /* EventKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKit.framework; path = System/Library/Frameworks/EventKit.framework; sourceTree = SDKROOT; };
 		905D81A9184CC1BF007AF71F /* EventKitUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKitUI.framework; path = System/Library/Frameworks/EventKitUI.framework; sourceTree = SDKROOT; };
+		9078055B18D1C26E00427F7B /* iAdCustomEventBanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iAdCustomEventBanner.h; path = CustomEvents/iAd/iAdCustomEventBanner.h; sourceTree = "<group>"; };
+		9078055C18D1C26E00427F7B /* iAdCustomEventBanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = iAdCustomEventBanner.m; path = CustomEvents/iAd/iAdCustomEventBanner.m; sourceTree = "<group>"; };
+		909716CC18AA4DDF007EEB4D /* VASTXMLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VASTXMLParser.h; sourceTree = "<group>"; };
+		909716CD18AA4DDF007EEB4D /* VASTXMLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VASTXMLParser.m; sourceTree = "<group>"; };
+		909716D218AA5CF8007EEB4D /* VAST.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VAST.h; sourceTree = "<group>"; };
+		909716D318AA5CF8007EEB4D /* VAST.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VAST.m; sourceTree = "<group>"; };
+		90987CD818BCA9CD00148D09 /* AdMobCustomEventBanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AdMobCustomEventBanner.h; path = CustomEvents/AdMob/AdMobCustomEventBanner.h; sourceTree = "<group>"; };
+		90987CD918BCA9CD00148D09 /* AdMobCustomEventBanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AdMobCustomEventBanner.m; path = CustomEvents/AdMob/AdMobCustomEventBanner.m; sourceTree = "<group>"; };
+		90987CFE18BCB95600148D09 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		90987D0018BCB96400148D09 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		90987D0218BCB96E00148D09 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		90987D0918BCD1AB00148D09 /* GADInterstitial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADInterstitial.h; path = CustomEvents/AdMob/GADInterstitial.h; sourceTree = "<group>"; };
+		90987D0A18BCD1AB00148D09 /* GADInterstitialDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADInterstitialDelegate.h; path = CustomEvents/AdMob/GADInterstitialDelegate.h; sourceTree = "<group>"; };
+		90987D0B18BCD1AB00148D09 /* GADRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADRequest.h; path = CustomEvents/AdMob/GADRequest.h; sourceTree = "<group>"; };
+		90987D0C18BCD1AB00148D09 /* GADRequestError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADRequestError.h; path = CustomEvents/AdMob/GADRequestError.h; sourceTree = "<group>"; };
+		90987D0D18BCD1AB00148D09 /* libGoogleAdMobAds.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libGoogleAdMobAds.a; path = CustomEvents/AdMob/libGoogleAdMobAds.a; sourceTree = "<group>"; };
+		90987D0E18BCD1AB00148D09 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.txt; path = CustomEvents/AdMob/README.txt; sourceTree = "<group>"; };
+		909A5E9718B60DC500C929A5 /* CustomEventBannerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomEventBannerDelegate.h; path = CustomEvents/CustomEventBannerDelegate.h; sourceTree = "<group>"; };
+		909A5E9A18B6168500C929A5 /* CustomEventBanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomEventBanner.h; path = CustomEvents/CustomEventBanner.h; sourceTree = "<group>"; };
+		909A5E9B18B6168500C929A5 /* CustomEventBanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CustomEventBanner.m; path = CustomEvents/CustomEventBanner.m; sourceTree = "<group>"; };
 		909F362F18487AB200080BD3 /* MobFoxMRAIDBannerAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobFoxMRAIDBannerAdapter.h; sourceTree = "<group>"; };
 		909F363018487AB200080BD3 /* MobFoxMRAIDBannerAdapter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MobFoxMRAIDBannerAdapter.m; sourceTree = "<group>"; };
+		909FE95319336C060014597C /* MobFoxNativeTrackingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MobFoxNativeTrackingView.h; path = NativeAds/MobFoxNativeTrackingView.h; sourceTree = "<group>"; };
+		909FE95419336C060014597C /* MobFoxNativeTrackingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MobFoxNativeTrackingView.m; path = NativeAds/MobFoxNativeTrackingView.m; sourceTree = "<group>"; };
+		90A0330A18D2E6A5001340B7 /* iAdCustomEventFullscreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iAdCustomEventFullscreen.h; sourceTree = "<group>"; };
+		90A0330B18D2E6A5001340B7 /* iAdCustomEventFullscreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iAdCustomEventFullscreen.m; sourceTree = "<group>"; };
+		90A3F7BD1935E02F00814208 /* MobFoxTableViewHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MobFoxTableViewHelper.h; path = NativeAds/MobFoxTableViewHelper.h; sourceTree = "<group>"; };
+		90A3F7BE1935E02F00814208 /* MobFoxTableViewHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MobFoxTableViewHelper.m; path = NativeAds/MobFoxTableViewHelper.m; sourceTree = "<group>"; };
+		90A5C8BE192F677700978746 /* UIView+MobFox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+MobFox.h"; sourceTree = "<group>"; };
+		90A5C8BF192F677700978746 /* UIView+MobFox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+MobFox.m"; sourceTree = "<group>"; };
+		90AC3ACD193C702F0021402D /* GADAdMobExtras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADAdMobExtras.h; path = CustomEvents/AdMob/GADAdMobExtras.h; sourceTree = "<group>"; };
+		90AC3ACE193C702F0021402D /* GADAdNetworkExtras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADAdNetworkExtras.h; path = CustomEvents/AdMob/GADAdNetworkExtras.h; sourceTree = "<group>"; };
+		90AC3ACF193C702F0021402D /* GADAdSize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADAdSize.h; path = CustomEvents/AdMob/GADAdSize.h; sourceTree = "<group>"; };
+		90AC3AD0193C702F0021402D /* GADBannerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADBannerView.h; path = CustomEvents/AdMob/GADBannerView.h; sourceTree = "<group>"; };
+		90AC3AD1193C70300021402D /* GADBannerViewDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADBannerViewDelegate.h; path = CustomEvents/AdMob/GADBannerViewDelegate.h; sourceTree = "<group>"; };
+		90AC3AD2193C70300021402D /* GADInAppPurchase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADInAppPurchase.h; path = CustomEvents/AdMob/GADInAppPurchase.h; sourceTree = "<group>"; };
+		90AC3AD3193C70300021402D /* GADInAppPurchaseDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADInAppPurchaseDelegate.h; path = CustomEvents/AdMob/GADInAppPurchaseDelegate.h; sourceTree = "<group>"; };
+		90AC3AD6193C70300021402D /* GADModules.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GADModules.h; path = CustomEvents/AdMob/GADModules.h; sourceTree = "<group>"; };
 		A746A63914B9DD110019992F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		A7992E5A1489342100E86AC8 /* MobFox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MobFox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7992E721489362800E86AC8 /* MobFoxSDKSource-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MobFoxSDKSource-Info.plist"; sourceTree = "<group>"; };
@@ -609,6 +735,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9014FD30184DFD8C006746EC /* SystemConfiguration.framework in Frameworks */,
+				9014FD31184DFD99006746EC /* MessageUI.framework in Frameworks */,
+				90987D0318BCB96E00148D09 /* CoreGraphics.framework in Frameworks */,
+				90987D0118BCB96400148D09 /* AVFoundation.framework in Frameworks */,
+				90987CFF18BCB95600148D09 /* AudioToolbox.framework in Frameworks */,
 				9014FD36184DFDD2006746EC /* CoreLocation.framework in Frameworks */,
 				0F8D9CB8160A5DEC00C330F8 /* AdSupport.framework in Frameworks */,
 				0F9B947D161F15F500348628 /* StoreKit.framework in Frameworks */,
@@ -903,6 +1034,91 @@
 			path = JSON;
 			sourceTree = "<group>";
 		};
+		901FCEE6192C8D0200D22785 /* NativeAds */ = {
+			isa = PBXGroup;
+			children = (
+				901FCEE7192C8E4900D22785 /* NativeAd.h */,
+				901FCEE8192C8E4900D22785 /* NativeAd.m */,
+				909FE95319336C060014597C /* MobFoxNativeTrackingView.h */,
+				909FE95419336C060014597C /* MobFoxNativeTrackingView.m */,
+				90A3F7BD1935E02F00814208 /* MobFoxTableViewHelper.h */,
+				90A3F7BE1935E02F00814208 /* MobFoxTableViewHelper.m */,
+			);
+			name = NativeAds;
+			sourceTree = "<group>";
+		};
+		9078055A18D1BFAD00427F7B /* iAd */ = {
+			isa = PBXGroup;
+			children = (
+				9078055B18D1C26E00427F7B /* iAdCustomEventBanner.h */,
+				9078055C18D1C26E00427F7B /* iAdCustomEventBanner.m */,
+				90A0330A18D2E6A5001340B7 /* iAdCustomEventFullscreen.h */,
+				90A0330B18D2E6A5001340B7 /* iAdCustomEventFullscreen.m */,
+			);
+			name = iAd;
+			sourceTree = "<group>";
+		};
+		909716CB18AA4DAA007EEB4D /* VAST */ = {
+			isa = PBXGroup;
+			children = (
+				909716CC18AA4DDF007EEB4D /* VASTXMLParser.h */,
+				909716CD18AA4DDF007EEB4D /* VASTXMLParser.m */,
+				909716D218AA5CF8007EEB4D /* VAST.h */,
+				909716D318AA5CF8007EEB4D /* VAST.m */,
+			);
+			name = VAST;
+			sourceTree = "<group>";
+		};
+		909A5E9118B605EC00C929A5 /* CustomEvents */ = {
+			isa = PBXGroup;
+			children = (
+				9078055A18D1BFAD00427F7B /* iAd */,
+				909A5E9418B6079A00C929A5 /* AdMob */,
+				909A5E9718B60DC500C929A5 /* CustomEventBannerDelegate.h */,
+				909A5E9A18B6168500C929A5 /* CustomEventBanner.h */,
+				909A5E9B18B6168500C929A5 /* CustomEventBanner.m */,
+				903ADEF818CDABA50001F0E4 /* CustomEventFullscreenDelegate.h */,
+				903ADEFD18CDAE460001F0E4 /* CustomEventFullscreen.h */,
+				903ADEFE18CDAE460001F0E4 /* CustomEventFullscreen.m */,
+				903ADF0918CDFDAA0001F0E4 /* CustomEvent.h */,
+				903ADF0A18CDFDAA0001F0E4 /* CustomEvent.m */,
+			);
+			name = CustomEvents;
+			sourceTree = "<group>";
+		};
+		909A5E9418B6079A00C929A5 /* AdMob */ = {
+			isa = PBXGroup;
+			children = (
+				909A5E9618B607BD00C929A5 /* SDK */,
+				90987CD818BCA9CD00148D09 /* AdMobCustomEventBanner.h */,
+				90987CD918BCA9CD00148D09 /* AdMobCustomEventBanner.m */,
+				903ADF0318CDB4D20001F0E4 /* AdMobCustomEventFullscreen.h */,
+				903ADF0418CDB4D20001F0E4 /* AdMobCustomEventFullscreen.m */,
+			);
+			name = AdMob;
+			sourceTree = "<group>";
+		};
+		909A5E9618B607BD00C929A5 /* SDK */ = {
+			isa = PBXGroup;
+			children = (
+				90AC3ACD193C702F0021402D /* GADAdMobExtras.h */,
+				90AC3ACE193C702F0021402D /* GADAdNetworkExtras.h */,
+				90AC3ACF193C702F0021402D /* GADAdSize.h */,
+				90AC3AD0193C702F0021402D /* GADBannerView.h */,
+				90AC3AD1193C70300021402D /* GADBannerViewDelegate.h */,
+				90AC3AD2193C70300021402D /* GADInAppPurchase.h */,
+				90AC3AD3193C70300021402D /* GADInAppPurchaseDelegate.h */,
+				90AC3AD6193C70300021402D /* GADModules.h */,
+				90987D0918BCD1AB00148D09 /* GADInterstitial.h */,
+				90987D0A18BCD1AB00148D09 /* GADInterstitialDelegate.h */,
+				90987D0B18BCD1AB00148D09 /* GADRequest.h */,
+				90987D0C18BCD1AB00148D09 /* GADRequestError.h */,
+				90987D0D18BCD1AB00148D09 /* libGoogleAdMobAds.a */,
+				90987D0E18BCD1AB00148D09 /* README.txt */,
+			);
+			name = SDK;
+			sourceTree = "<group>";
+		};
 		A7992E711489362800E86AC8 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -917,6 +1133,9 @@
 		A7992E751489362800E86AC8 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				901FCEE6192C8D0200D22785 /* NativeAds */,
+				909A5E9118B605EC00C929A5 /* CustomEvents */,
+				909716CB18AA4DAA007EEB4D /* VAST */,
 				A7992EB41489363E00E86AC8 /* Helpers */,
 				A7992EB31489363000E86AC8 /* DTXML */,
 				A7992E7A1489362800E86AC8 /* MobFoxAdBrowserViewController.h */,
@@ -924,6 +1143,8 @@
 				A7992E7C1489362800E86AC8 /* MobFoxBannerView.h */,
 				A7992E7D1489362800E86AC8 /* MobFoxBannerView.m */,
 				909F362F18487AB200080BD3 /* MobFoxMRAIDBannerAdapter.h */,
+				901FCEF0192C97EE00D22785 /* MobFoxNativeAdController.h */,
+				901FCEF1192C97EE00D22785 /* MobFoxNativeAdController.m */,
 				909F363018487AB200080BD3 /* MobFoxMRAIDBannerAdapter.m */,
 				0FCEB206150EBF9C00BD5BD3 /* MobFoxVideoInterstitialViewController.h */,
 				0FCEB207150EBF9C00BD5BD3 /* MobFoxVideoInterstitialViewController.m */,
@@ -949,6 +1170,8 @@
 		A7992EB41489363E00E86AC8 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				90A5C8BE192F677700978746 /* UIView+MobFox.h */,
+				90A5C8BF192F677700978746 /* UIView+MobFox.m */,
 				90038EF21846035D00446EAD /* TouchJSON */,
 				90038DE11846019400446EAD /* MoPubSDK */,
 				0F0EB65A1503B40D00EEC4C3 /* UIDevice+IdentifierAddition.h */,
@@ -978,6 +1201,9 @@
 		A7992EBA148936E400E86AC8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				90987D0218BCB96E00148D09 /* CoreGraphics.framework */,
+				90987D0018BCB96400148D09 /* AVFoundation.framework */,
+				90987CFE18BCB95600148D09 /* AudioToolbox.framework */,
 				9014FD32184DFDA2006746EC /* CoreTelephony.framework */,
 				905D81A8184CC1BF007AF71F /* EventKit.framework */,
 				905D81A9184CC1BF007AF71F /* EventKitUI.framework */,
@@ -1020,10 +1246,15 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				90A3F7BF1935E02F00814208 /* MobFoxTableViewHelper.h in Headers */,
 				A7CDEF55148E76F200DD6D84 /* MobFox.h in Headers */,
+				901FCEF2192C97EE00D22785 /* MobFoxNativeAdController.h in Headers */,
 				90038E851846019400446EAD /* MPFacebookKeywordProvider.h in Headers */,
 				90038E9A1846019400446EAD /* MPInterstitialAdManager.h in Headers */,
 				90038ED81846019400446EAD /* MPStoreKitProvider.h in Headers */,
+				903ADEF918CDABA50001F0E4 /* CustomEventFullscreenDelegate.h in Headers */,
+				90CCFB0A18F829E400D73FEB /* GADRequestError.h in Headers */,
+				90AC3AE1193C70300021402D /* GADBannerViewDelegate.h in Headers */,
 				0FCEB209150EBF9C00BD5BD3 /* MobFoxVideoInterstitialViewController.h in Headers */,
 				A7992E8F1489362800E86AC8 /* DTXMLDocument.h in Headers */,
 				90038E6F1846019400446EAD /* MPBannerCustomEventAdapter.h in Headers */,
@@ -1040,21 +1271,30 @@
 				90038ECA1846019400446EAD /* MPAnalyticsTracker.h in Headers */,
 				A7992EA31489362800E86AC8 /* NSString+MobFox.h in Headers */,
 				90038EAD1846019400446EAD /* MRAdView+Controllers.h in Headers */,
+				909716D418AA5CF8007EEB4D /* VAST.h in Headers */,
 				90038EE41846019400446EAD /* MPInterstitialAdController.h in Headers */,
+				90AC3AE3193C70300021402D /* GADInAppPurchase.h in Headers */,
 				90038EB81846019400446EAD /* MRDimmingView.h in Headers */,
 				90038F1D1846035D00446EAD /* CJSONSerializedData.h in Headers */,
 				A7992EA71489362800E86AC8 /* NSURL+MobFox.h in Headers */,
 				A7992EAB1489362800E86AC8 /* RedirectChecker.h in Headers */,
 				90038E881846019400446EAD /* MPLastResortDelegate.h in Headers */,
+				90AC3ADF193C70300021402D /* GADBannerView.h in Headers */,
 				90038EE81846019400446EAD /* MPInterstitialCustomEventDelegate.h in Headers */,
 				90038EDE1846019400446EAD /* MPAdView.h in Headers */,
 				A7992EAF1489362800E86AC8 /* UIView+FindViewController.h in Headers */,
+				90CCFB0918F829E400D73FEB /* GADRequest.h in Headers */,
+				90AC3ADD193C70300021402D /* GADAdSize.h in Headers */,
+				90AC3ADB193C70300021402D /* GADAdNetworkExtras.h in Headers */,
 				90038EA31846019400446EAD /* MPPrivateInterstitialCustomEventDelegate.h in Headers */,
 				90038ED21846019400446EAD /* MPLogging.h in Headers */,
 				90038F251846035D00446EAD /* NSDictionary_JSONExtensions.h in Headers */,
+				90AC3AD9193C70300021402D /* GADAdMobExtras.h in Headers */,
 				90038F191846035D00446EAD /* CJSONSerialization.h in Headers */,
 				90038EC61846019400446EAD /* UIViewController+MPAdditions.h in Headers */,
+				90A5C8C0192F677700978746 /* UIView+MobFox.h in Headers */,
 				90038E761846019400446EAD /* MPAdAlertGestureRecognizer.h in Headers */,
+				90CCFB0818F829E400D73FEB /* GADInterstitialDelegate.h in Headers */,
 				0F34E1BE14DBEF04000F8713 /* MobFoxToolBar.h in Headers */,
 				90038EC81846019400446EAD /* UIWebView+MPAdditions.h in Headers */,
 				90038EB41846019400446EAD /* MRCalendarManager.h in Headers */,
@@ -1066,25 +1306,33 @@
 				90038F2D1846035D00446EAD /* CJSONScanner.h in Headers */,
 				90038EE01846019400446EAD /* MPBannerCustomEvent.h in Headers */,
 				90038EDA1846019400446EAD /* MPTimer.h in Headers */,
+				90987D3D18BCD32500148D09 /* CustomEventBanner.h in Headers */,
 				90038E981846019400446EAD /* MPBaseInterstitialAdapter.h in Headers */,
 				90038EC41846019400446EAD /* NSURL+MPAdditions.h in Headers */,
 				90038EC21846019400446EAD /* MRVideoPlayerManager.h in Headers */,
+				909FE95519336C060014597C /* MobFoxNativeTrackingView.h in Headers */,
 				90038EA91846019400446EAD /* MPMRAIDInterstitialCustomEvent.h in Headers */,
 				0F62B51A14E92D4A0027BCB8 /* UIImage+MobFox.h in Headers */,
 				0F62B51F14E92E3D0027BCB8 /* NSBundle+MobFox.h in Headers */,
 				0F66D50614F30E9400FD6569 /* UIButton+MobFox.h in Headers */,
 				0F0EB65C1503B40D00EEC4C3 /* UIDevice+IdentifierAddition.h in Headers */,
+				903ADF0B18CDFDAA0001F0E4 /* CustomEvent.h in Headers */,
 				90038E8A1846019400446EAD /* MPProgressOverlayView.h in Headers */,
+				903ADEFF18CDAE460001F0E4 /* CustomEventFullscreen.h in Headers */,
 				90038F151846035D00446EAD /* CJSONDeserializer_BlocksExtensions.h in Headers */,
 				90038EA11846019400446EAD /* MPLegacyInterstitialCustomEventAdapter.h in Headers */,
 				90038E711846019400446EAD /* MPBaseBannerAdapter.h in Headers */,
 				0F3B1919159456940035D3EF /* MobFoxVideoPlayerViewController.h in Headers */,
 				90038E6E1846019400446EAD /* MPBannerAdManagerDelegate.h in Headers */,
 				0F3567F6165F9DC500BED5FA /* MobFoxInterstitialPlayerViewController.h in Headers */,
+				90AC3AE5193C70300021402D /* GADInAppPurchaseDelegate.h in Headers */,
 				90038E871846019400446EAD /* MPKeywordProvider.h in Headers */,
 				90038EAB1846019400446EAD /* MPMRAIDInterstitialViewController.h in Headers */,
+				90987D3C18BCD32500148D09 /* CustomEventBannerDelegate.h in Headers */,
 				90038E731846019400446EAD /* MPLegacyBannerCustomEventAdapter.h in Headers */,
+				909716CE18AA4DDF007EEB4D /* VASTXMLParser.h in Headers */,
 				90038EB21846019400446EAD /* MRBundleManager.h in Headers */,
+				901FCEE9192C8E4900D22785 /* NativeAd.h in Headers */,
 				90038E8E1846019400446EAD /* MPAdWebView.h in Headers */,
 				90038EE31846019400446EAD /* MPConstants.h in Headers */,
 				90038E8C1846019400446EAD /* MPURLResolver.h in Headers */,
@@ -1110,12 +1358,14 @@
 				90038EA41846019400446EAD /* MPInstanceProvider.h in Headers */,
 				90038EDC1846019400446EAD /* MPAdConversionTracker.h in Headers */,
 				90038E6C1846019400446EAD /* MPBannerAdManager.h in Headers */,
+				90CCFB0718F829E400D73FEB /* GADInterstitial.h in Headers */,
 				90038ED41846019400446EAD /* MPReachability.h in Headers */,
 				90038EA71846019400446EAD /* MPMRAIDBannerCustomEvent.h in Headers */,
 				90038E9C1846019400446EAD /* MPInterstitialAdManagerDelegate.h in Headers */,
 				90038E781846019400446EAD /* MPAdAlertManager.h in Headers */,
 				90038F211846035D00446EAD /* CDataScanner_Extensions.h in Headers */,
 				909F363118487AB200080BD3 /* MobFoxMRAIDBannerAdapter.h in Headers */,
+				90AC3AEB193C70300021402D /* GADModules.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1123,10 +1373,15 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				90A3F7C01935E02F00814208 /* MobFoxTableViewHelper.h in Headers */,
 				A7CDEF53148E76F100DD6D84 /* MobFox.h in Headers */,
 				0FCEB20A150EBF9C00BD5BD3 /* MobFoxVideoInterstitialViewController.h in Headers */,
+				901FCEF3192C97EE00D22785 /* MobFoxNativeAdController.h in Headers */,
 				A7992EC81489373000E86AC8 /* NSString+MobFox.h in Headers */,
 				903602D71859AE040020E5EE /* MPBannerAdManager.h in Headers */,
+				903ADEFA18CDABA50001F0E4 /* CustomEventFullscreenDelegate.h in Headers */,
+				90CCFB1318F829E700D73FEB /* GADRequestError.h in Headers */,
+				90AC3AE2193C70300021402D /* GADBannerViewDelegate.h in Headers */,
 				903602D81859AE040020E5EE /* MPBannerAdManagerDelegate.h in Headers */,
 				903602D91859AE040020E5EE /* MPBannerCustomEventAdapter.h in Headers */,
 				903602DA1859AE040020E5EE /* MPBaseBannerAdapter.h in Headers */,
@@ -1143,21 +1398,30 @@
 				903602E51859AE040020E5EE /* MPKeywordProvider.h in Headers */,
 				903602E61859AE040020E5EE /* MPLastResortDelegate.h in Headers */,
 				903602E71859AE040020E5EE /* MPProgressOverlayView.h in Headers */,
+				909716D518AA5CF8007EEB4D /* VAST.h in Headers */,
 				903602E81859AE040020E5EE /* MPURLResolver.h in Headers */,
+				90AC3AE4193C70300021402D /* GADInAppPurchase.h in Headers */,
 				903602E91859AE040020E5EE /* MPAdWebView.h in Headers */,
 				903602EA1859AE040020E5EE /* MPAdWebViewAgent.h in Headers */,
 				903602EB1859AE040020E5EE /* MPHTMLBannerCustomEvent.h in Headers */,
 				903602EC1859AE040020E5EE /* MPHTMLInterstitialCustomEvent.h in Headers */,
 				903602ED1859AE040020E5EE /* MPHTMLInterstitialViewController.h in Headers */,
+				90AC3AE0193C70300021402D /* GADBannerView.h in Headers */,
 				903602EE1859AE040020E5EE /* MPBaseInterstitialAdapter.h in Headers */,
 				903602EF1859AE040020E5EE /* MPInterstitialAdManager.h in Headers */,
 				903602F01859AE040020E5EE /* MPInterstitialAdManagerDelegate.h in Headers */,
+				90CCFB1218F829E700D73FEB /* GADRequest.h in Headers */,
+				90AC3ADE193C70300021402D /* GADAdSize.h in Headers */,
+				90AC3ADC193C70300021402D /* GADAdNetworkExtras.h in Headers */,
 				903602F11859AE040020E5EE /* MPInterstitialCustomEventAdapter.h in Headers */,
 				903602F21859AE040020E5EE /* MPInterstitialViewController.h in Headers */,
 				903602F31859AE040020E5EE /* MPLegacyInterstitialCustomEventAdapter.h in Headers */,
+				90AC3ADA193C70300021402D /* GADAdMobExtras.h in Headers */,
 				903602F41859AE040020E5EE /* MPPrivateInterstitialCustomEventDelegate.h in Headers */,
 				903602F51859AE040020E5EE /* MPInstanceProvider.h in Headers */,
+				90A5C8C1192F677700978746 /* UIView+MobFox.h in Headers */,
 				903602F61859AE040020E5EE /* MPMRAIDBannerCustomEvent.h in Headers */,
+				90CCFB1118F829E700D73FEB /* GADInterstitialDelegate.h in Headers */,
 				903602F71859AE040020E5EE /* MPMRAIDInterstitialCustomEvent.h in Headers */,
 				903602F81859AE040020E5EE /* MPMRAIDInterstitialViewController.h in Headers */,
 				903602F91859AE040020E5EE /* MRAdView+Controllers.h in Headers */,
@@ -1169,25 +1433,33 @@
 				903602FF1859AE040020E5EE /* MRDimmingView.h in Headers */,
 				903603001859AE040020E5EE /* MRImageDownloader.h in Headers */,
 				903603011859AE040020E5EE /* MRJavaScriptEventEmitter.h in Headers */,
+				90987D3F18BCD32600148D09 /* CustomEventBanner.h in Headers */,
 				903603021859AE040020E5EE /* MRPictureManager.h in Headers */,
 				903603031859AE040020E5EE /* MRProperty.h in Headers */,
 				903603041859AE040020E5EE /* MRVideoPlayerManager.h in Headers */,
+				909FE95619336C060014597C /* MobFoxNativeTrackingView.h in Headers */,
 				903603051859AE040020E5EE /* NSURL+MPAdditions.h in Headers */,
 				903603061859AE040020E5EE /* UIViewController+MPAdditions.h in Headers */,
 				903603071859AE040020E5EE /* UIWebView+MPAdditions.h in Headers */,
 				903603081859AE040020E5EE /* MPAnalyticsTracker.h in Headers */,
 				903603091859AE040020E5EE /* MPError.h in Headers */,
+				903ADF0C18CDFDAA0001F0E4 /* CustomEvent.h in Headers */,
 				9036030A1859AE040020E5EE /* MPGlobal.h in Headers */,
+				903ADF0018CDAE460001F0E4 /* CustomEventFullscreen.h in Headers */,
 				9036030B1859AE040020E5EE /* MPIdentityProvider.h in Headers */,
 				9036030C1859AE040020E5EE /* MPLogging.h in Headers */,
 				9036030D1859AE040020E5EE /* MPReachability.h in Headers */,
 				9036030E1859AE040020E5EE /* MPSessionTracker.h in Headers */,
 				9036030F1859AE040020E5EE /* MPStoreKitProvider.h in Headers */,
 				903603101859AE040020E5EE /* MPTimer.h in Headers */,
+				90AC3AE6193C70300021402D /* GADInAppPurchaseDelegate.h in Headers */,
 				903603111859AE040020E5EE /* MPAdConversionTracker.h in Headers */,
 				903603121859AE040020E5EE /* MPAdView.h in Headers */,
+				90987D3E18BCD32600148D09 /* CustomEventBannerDelegate.h in Headers */,
 				903603131859AE040020E5EE /* MPBannerCustomEvent.h in Headers */,
+				909716CF18AA4DDF007EEB4D /* VASTXMLParser.h in Headers */,
 				903603141859AE040020E5EE /* MPBannerCustomEventDelegate.h in Headers */,
+				901FCEEA192C8E4900D22785 /* NativeAd.h in Headers */,
 				903603151859AE040020E5EE /* MPConstants.h in Headers */,
 				903603161859AE040020E5EE /* MPInterstitialAdController.h in Headers */,
 				903603171859AE040020E5EE /* MPInterstitialCustomEvent.h in Headers */,
@@ -1213,12 +1485,14 @@
 				90038F0E1846035D00446EAD /* CDataScanner.h in Headers */,
 				0F62B52114E938B20027BCB8 /* NSBundle+MobFox.h in Headers */,
 				0F62B52314E938B70027BCB8 /* UIImage+MobFox.h in Headers */,
+				90CCFB1018F829E700D73FEB /* GADInterstitial.h in Headers */,
 				90038F321846035D00446EAD /* CJSONSerializer.h in Headers */,
 				90038F261846035D00446EAD /* NSDictionary_JSONExtensions.h in Headers */,
 				0F66D50714F30E9400FD6569 /* UIButton+MobFox.h in Headers */,
 				0F0EB65D1503B40D00EEC4C3 /* UIDevice+IdentifierAddition.h in Headers */,
 				0F3B191C159456A50035D3EF /* MobFoxVideoPlayerViewController.h in Headers */,
 				0F3567F7165F9DC500BED5FA /* MobFoxInterstitialPlayerViewController.h in Headers */,
+				90AC3AEC193C70300021402D /* GADModules.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1299,7 +1573,7 @@
 				90038EA61846019400446EAD /* LICENSE in Resources */,
 				90038F381846035D00446EAD /* README.markdown in Resources */,
 				90038EE91846019400446EAD /* MPCloseButtonX.png in Resources */,
-				90038EEB1846019400446EAD /* MRAID.bundle in Resources */,
+				90987D2318BCD1AB00148D09 /* README.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1342,6 +1616,7 @@
 				90038EC31846019400446EAD /* MRVideoPlayerManager.m in Sources */,
 				90038E8D1846019400446EAD /* MPURLResolver.m in Sources */,
 				A7992E911489362800E86AC8 /* DTXMLDocument.m in Sources */,
+				90A5C8C2192F677700978746 /* UIView+MobFox.m in Sources */,
 				A7992E951489362800E86AC8 /* DTXMLElement.m in Sources */,
 				A7992E991489362800E86AC8 /* MobFoxAdBrowserViewController.m in Sources */,
 				90038ED51846019400446EAD /* MPReachability.m in Sources */,
@@ -1361,7 +1636,10 @@
 				A7992EB11489362800E86AC8 /* UIView+FindViewController.m in Sources */,
 				90038E891846019400446EAD /* MPLastResortDelegate.m in Sources */,
 				90038E971846019400446EAD /* MPHTMLInterstitialViewController.m in Sources */,
+				90987CDC18BCA9CD00148D09 /* AdMobCustomEventBanner.m in Sources */,
+				90A3F7C11935E02F00814208 /* MobFoxTableViewHelper.m in Sources */,
 				0F34E1C014DBEF04000F8713 /* MobFoxToolBar.m in Sources */,
+				903ADF0118CDAE460001F0E4 /* CustomEventFullscreen.m in Sources */,
 				90038E8F1846019400446EAD /* MPAdWebView.m in Sources */,
 				90038EAC1846019400446EAD /* MPMRAIDInterstitialViewController.m in Sources */,
 				90038E6D1846019400446EAD /* MPBannerAdManager.m in Sources */,
@@ -1374,31 +1652,38 @@
 				0F62B51B14E92D4A0027BCB8 /* UIImage+MobFox.m in Sources */,
 				0F62B52014E92E3D0027BCB8 /* NSBundle+MobFox.m in Sources */,
 				90038EE51846019400446EAD /* MPInterstitialAdController.m in Sources */,
+				909716D618AA5CF8007EEB4D /* VAST.m in Sources */,
 				90038F2F1846035D00446EAD /* CJSONScanner.m in Sources */,
 				90038ECB1846019400446EAD /* MPAnalyticsTracker.m in Sources */,
 				90038ED71846019400446EAD /* MPSessionTracker.m in Sources */,
+				903ADF0D18CDFDAA0001F0E4 /* CustomEvent.m in Sources */,
 				90038F1F1846035D00446EAD /* CJSONSerializedData.m in Sources */,
 				0F66D50814F30E9400FD6569 /* UIButton+MobFox.m in Sources */,
+				9078055F18D1C26E00427F7B /* iAdCustomEventBanner.m in Sources */,
 				90038EC71846019400446EAD /* UIViewController+MPAdditions.m in Sources */,
 				90038E701846019400446EAD /* MPBannerCustomEventAdapter.m in Sources */,
 				90038EA81846019400446EAD /* MPMRAIDBannerCustomEvent.m in Sources */,
 				90038EDD1846019400446EAD /* MPAdConversionTracker.m in Sources */,
 				90038EDF1846019400446EAD /* MPAdView.m in Sources */,
 				90038EB11846019400446EAD /* MRAdViewDisplayController.m in Sources */,
+				909716D018AA4DDF007EEB4D /* VASTXMLParser.m in Sources */,
 				90038EB31846019400446EAD /* MRBundleManager.m in Sources */,
 				90038EB91846019400446EAD /* MRDimmingView.m in Sources */,
 				90038ECF1846019400446EAD /* MPGlobal.m in Sources */,
 				90038EDB1846019400446EAD /* MPTimer.m in Sources */,
 				0F0EB65E1503B40D00EEC4C3 /* UIDevice+IdentifierAddition.m in Sources */,
 				90038E801846019400446EAD /* MPAdDestinationDisplayAgent.m in Sources */,
+				909FE95719336C060014597C /* MobFoxNativeTrackingView.m in Sources */,
 				90038EE71846019400446EAD /* MPInterstitialCustomEvent.m in Sources */,
 				90038EBB1846019400446EAD /* MRImageDownloader.m in Sources */,
 				0FCEB20B150EBF9C00BD5BD3 /* MobFoxVideoInterstitialViewController.m in Sources */,
 				90038E911846019400446EAD /* MPAdWebViewAgent.m in Sources */,
 				90038ECD1846019400446EAD /* MPError.m in Sources */,
 				90038EBD1846019400446EAD /* MRJavaScriptEventEmitter.m in Sources */,
+				903ADF0718CDB4D20001F0E4 /* AdMobCustomEventFullscreen.m in Sources */,
 				0F3B191A159456940035D3EF /* MobFoxVideoPlayerViewController.m in Sources */,
 				90038EBF1846019400446EAD /* MRPictureManager.m in Sources */,
+				90A0330E18D2E6A5001340B7 /* iAdCustomEventFullscreen.m in Sources */,
 				90038EB51846019400446EAD /* MRCalendarManager.m in Sources */,
 				90038E951846019400446EAD /* MPHTMLInterstitialCustomEvent.m in Sources */,
 				90038E931846019400446EAD /* MPHTMLBannerCustomEvent.m in Sources */,
@@ -1411,6 +1696,7 @@
 				90038EA51846019400446EAD /* MPInstanceProvider.m in Sources */,
 				90038E8B1846019400446EAD /* MPProgressOverlayView.m in Sources */,
 				90038ED91846019400446EAD /* MPStoreKitProvider.m in Sources */,
+				901FCEF4192C97EE00D22785 /* MobFoxNativeAdController.m in Sources */,
 				90038E9B1846019400446EAD /* MPInterstitialAdManager.m in Sources */,
 				90038F131846035D00446EAD /* CFilteringJSONSerializer.m in Sources */,
 				90038E7B1846019400446EAD /* MPAdBrowserController.m in Sources */,
@@ -1420,8 +1706,10 @@
 				90038F231846035D00446EAD /* CDataScanner_Extensions.m in Sources */,
 				90038EA01846019400446EAD /* MPInterstitialViewController.m in Sources */,
 				90038EE11846019400446EAD /* MPBannerCustomEvent.m in Sources */,
+				901FCEEB192C8E4900D22785 /* NativeAd.m in Sources */,
 				90038F2B1846035D00446EAD /* CJSONDeserializer.m in Sources */,
 				90038EAF1846019400446EAD /* MRAdView.m in Sources */,
+				909A5E9D18B6168500C929A5 /* CustomEventBanner.m in Sources */,
 				90038E861846019400446EAD /* MPFacebookKeywordProvider.m in Sources */,
 				90038ED11846019400446EAD /* MPIdentityProvider.m in Sources */,
 			);
@@ -1434,6 +1722,7 @@
 				903602D61859ACA30020E5EE /* MPBannerAdManager.m in Sources */,
 				9020731F1859A6A4001A696C /* MPBannerCustomEventAdapter.m in Sources */,
 				902073211859A6A4001A696C /* MPBaseBannerAdapter.m in Sources */,
+				90A5C8C3192F677700978746 /* UIView+MobFox.m in Sources */,
 				902073231859A6A4001A696C /* MPLegacyBannerCustomEventAdapter.m in Sources */,
 				902073261859A6A4001A696C /* MPAdAlertGestureRecognizer.m in Sources */,
 				902073281859A6A4001A696C /* MPAdAlertManager.m in Sources */,
@@ -1453,7 +1742,10 @@
 				902073461859A6A5001A696C /* MPHTMLInterstitialViewController.m in Sources */,
 				902073481859A6A5001A696C /* MPBaseInterstitialAdapter.m in Sources */,
 				9020734A1859A6A5001A696C /* MPInterstitialAdManager.m in Sources */,
+				90987CDD18BCA9CD00148D09 /* AdMobCustomEventBanner.m in Sources */,
+				90A3F7C21935E02F00814208 /* MobFoxTableViewHelper.m in Sources */,
 				9020734D1859A6A5001A696C /* MPInterstitialCustomEventAdapter.m in Sources */,
+				903ADF0218CDAE460001F0E4 /* CustomEventFullscreen.m in Sources */,
 				9020734F1859A6A5001A696C /* MPInterstitialViewController.m in Sources */,
 				902073511859A6A5001A696C /* MPLegacyInterstitialCustomEventAdapter.m in Sources */,
 				902073541859A6A5001A696C /* MPInstanceProvider.m in Sources */,
@@ -1466,31 +1758,38 @@
 				902073641859A6A5001A696C /* MRCalendarManager.m in Sources */,
 				902073661859A6A5001A696C /* MRCommand.m in Sources */,
 				902073681859A6A5001A696C /* MRDimmingView.m in Sources */,
+				909716D718AA5CF8007EEB4D /* VAST.m in Sources */,
 				9020736A1859A6A5001A696C /* MRImageDownloader.m in Sources */,
 				9020736C1859A6A5001A696C /* MRJavaScriptEventEmitter.m in Sources */,
 				9020736E1859A6A5001A696C /* MRPictureManager.m in Sources */,
+				903ADF0E18CDFDAA0001F0E4 /* CustomEvent.m in Sources */,
 				902073701859A6A5001A696C /* MRProperty.m in Sources */,
 				902073721859A6A5001A696C /* MRVideoPlayerManager.m in Sources */,
+				9078056018D1C26E00427F7B /* iAdCustomEventBanner.m in Sources */,
 				902073741859A6A5001A696C /* NSURL+MPAdditions.m in Sources */,
 				902073761859A6A5001A696C /* UIViewController+MPAdditions.m in Sources */,
 				902073781859A6A5001A696C /* UIWebView+MPAdditions.m in Sources */,
 				9020737A1859A6A5001A696C /* MPAnalyticsTracker.m in Sources */,
 				9020737C1859A6A5001A696C /* MPError.m in Sources */,
 				9020737E1859A6A5001A696C /* MPGlobal.m in Sources */,
+				909716D118AA4DDF007EEB4D /* VASTXMLParser.m in Sources */,
 				902073801859A6A5001A696C /* MPIdentityProvider.m in Sources */,
 				902073821859A6A5001A696C /* MPLogging.m in Sources */,
 				902073841859A6A5001A696C /* MPReachability.m in Sources */,
 				902073861859A6A5001A696C /* MPSessionTracker.m in Sources */,
 				902073881859A6A5001A696C /* MPStoreKitProvider.m in Sources */,
 				9020738A1859A6A5001A696C /* MPTimer.m in Sources */,
+				909FE95819336C060014597C /* MobFoxNativeTrackingView.m in Sources */,
 				9020738C1859A6A5001A696C /* MPAdConversionTracker.m in Sources */,
 				9020738E1859A6A5001A696C /* MPAdView.m in Sources */,
 				902073901859A6A5001A696C /* MPBannerCustomEvent.m in Sources */,
 				902073941859A6A5001A696C /* MPInterstitialAdController.m in Sources */,
 				902073961859A6A5001A696C /* MPInterstitialCustomEvent.m in Sources */,
 				A7992EC91489373000E86AC8 /* NSString+MobFox.m in Sources */,
+				903ADF0818CDB4D20001F0E4 /* AdMobCustomEventFullscreen.m in Sources */,
 				A7992ECB1489373000E86AC8 /* NSURL+MobFox.m in Sources */,
 				A7992ECD1489373000E86AC8 /* RedirectChecker.m in Sources */,
+				90A0330F18D2E6A5001340B7 /* iAdCustomEventFullscreen.m in Sources */,
 				A7992ECF1489373000E86AC8 /* UIView+FindViewController.m in Sources */,
 				A7992ED11489373000E86AC8 /* DTXMLDocument.m in Sources */,
 				A7992ED31489373000E86AC8 /* DTXMLElement.m in Sources */,
@@ -1503,6 +1802,7 @@
 				0F62B52214E938B40027BCB8 /* NSBundle+MobFox.m in Sources */,
 				90038F141846035D00446EAD /* CFilteringJSONSerializer.m in Sources */,
 				90038F2C1846035D00446EAD /* CJSONDeserializer.m in Sources */,
+				901FCEF5192C97EE00D22785 /* MobFoxNativeAdController.m in Sources */,
 				0F62B52414E938BA0027BCB8 /* UIImage+MobFox.m in Sources */,
 				0F66D50914F30E9400FD6569 /* UIButton+MobFox.m in Sources */,
 				90038F281846035D00446EAD /* NSDictionary_JSONExtensions.m in Sources */,
@@ -1512,8 +1812,10 @@
 				90038F301846035D00446EAD /* CJSONScanner.m in Sources */,
 				0FCEB20C150EBF9C00BD5BD3 /* MobFoxVideoInterstitialViewController.m in Sources */,
 				90038F1C1846035D00446EAD /* CJSONSerialization.m in Sources */,
+				901FCEEC192C8E4900D22785 /* NativeAd.m in Sources */,
 				0F3B191D159456A50035D3EF /* MobFoxVideoPlayerViewController.m in Sources */,
 				90038F341846035D00446EAD /* CJSONSerializer.m in Sources */,
+				909A5E9F18B6168B00C929A5 /* CustomEventBanner.m in Sources */,
 				0F3567F9165F9DC500BED5FA /* MobFoxInterstitialPlayerViewController.m in Sources */,
 				90038F241846035D00446EAD /* CDataScanner_Extensions.m in Sources */,
 			);
@@ -1539,8 +1841,14 @@
 				INFOPLIST_FILE = "Core/MobFoxSDKSource-Info.plist";
 				INFOPLIST_PATH = "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Volumes/MacintoshData/Xcodeprojects/MobFox-iOS-SDK/Core/Source",
+					"/Volumes/MacintoshData/Xcodeprojects/MobFox-iOS-SDK/Core/Source/CustomEvents/AdMob",
+				);
 				LINK_WITH_STANDARD_LIBRARIES = NO;
 				MACH_O_TYPE = mh_object;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = MobFox;
 				SKIP_INSTALL = YES;
 				UNLOCALIZED_RESOURCES_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Resources";
@@ -1565,8 +1873,14 @@
 				INFOPLIST_FILE = "Core/MobFoxSDKSource-Info.plist";
 				INFOPLIST_PATH = "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Volumes/MacintoshData/Xcodeprojects/MobFox-iOS-SDK/Core/Source",
+					"/Volumes/MacintoshData/Xcodeprojects/MobFox-iOS-SDK/Core/Source/CustomEvents/AdMob",
+				);
 				LINK_WITH_STANDARD_LIBRARIES = NO;
 				MACH_O_TYPE = mh_object;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = MobFox;
 				SKIP_INSTALL = YES;
 				UNLOCALIZED_RESOURCES_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Resources";
@@ -1583,6 +1897,11 @@
 				GCC_PREFIX_HEADER = "Core/MobFoxSDKSource-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Volumes/MacintoshData/Xcodeprojects/MobFox-iOS-SDK/Core/Source",
+					"/Volumes/MacintoshData/Xcodeprojects/MobFox-iOS-SDK/Core/Source/CustomEvents/AdMob",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = MobFox;
 				PUBLIC_HEADERS_FOLDER_PATH = MobFox;
@@ -1599,6 +1918,11 @@
 				GCC_PREFIX_HEADER = "Core/MobFoxSDKSource-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Volumes/MacintoshData/Xcodeprojects/MobFox-iOS-SDK/Core/Source",
+					"/Volumes/MacintoshData/Xcodeprojects/MobFox-iOS-SDK/Core/Source/CustomEvents/AdMob",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = MobFox;
 				PUBLIC_HEADERS_FOLDER_PATH = MobFox;
@@ -1610,7 +1934,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
@@ -1632,7 +1956,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -1644,7 +1968,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
@@ -1659,7 +1983,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				STRIP_STYLE = debugging;

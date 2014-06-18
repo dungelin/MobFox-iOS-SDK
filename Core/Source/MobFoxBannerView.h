@@ -42,7 +42,6 @@ enum {
 	UIViewAnimationTransition refreshAnimation;
 	__unsafe_unretained id <MobFoxBannerViewDelegate> delegate;
 
-	UIImage *_bannerImage;
 	BOOL _tapThroughLeavesApp;
 	BOOL _shouldScaleWebView;
 	BOOL _shouldSkipLinkPreflight;
@@ -67,21 +66,21 @@ enum {
 @property (nonatomic, readonly, getter=isBannerViewActionInProgress) BOOL bannerViewActionInProgress;
 
 @property (nonatomic, assign) BOOL refreshTimerOff;
-
+@property (nonatomic, retain) UIImage *_bannerImage;
 @property (strong, nonatomic) NSString *requestURL;
+
+@property (nonatomic, assign) NSInteger userAge;
+@property (nonatomic, assign) NSString* userGender;
+@property (nonatomic, retain) NSArray* keywords;
 
 @property (nonatomic, assign) BOOL allowDelegateAssigmentToRequestAd;
 
 @property (nonatomic, assign) BOOL locationAwareAdverts;
 
+
 - (void)setLocationWithLatitude:(CGFloat)latitude longitude:(CGFloat)longitude;
 
 - (void)requestAd;
-
-- (void)requestDemoBannerImageAdvert; 
-- (void)requestDemoBannerTextAdvert;
-- (void)requestDemoBannerTextSkipOverlayInAppAdvert;
-- (void)requestDemoBannerTextSkipOverlaySafariAdvert;
 
 @end
 

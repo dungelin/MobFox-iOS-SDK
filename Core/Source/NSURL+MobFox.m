@@ -10,7 +10,7 @@
 	{
 		return YES;
 	}
-	if ([scheme isEqualToString:@"http"])
+	if ([scheme isEqualToString:@"http"] || [scheme isEqualToString:@"https"])
 	{
 		if ([host isEqualToString:@"maps.google.com"])
 		{
@@ -26,12 +26,17 @@
 		{
 			return YES;
 		}
-
-		if ([host isEqualToString:@"itunes.apple.com"])
+        
+        if ([host hasSuffix:@"itunes.apple.com"])
 		{
 			return YES;
 		}
+        
 	}
+    if ([scheme isEqualToString:@"itms-apps"] && [host hasSuffix:@"itunes.apple.com"])
+    {
+        return YES;
+    }
 	return NO;	
 }
 
